@@ -1,10 +1,10 @@
 "use client"
 import React from 'react'
 import Sidebar from '@/components/admin/Sidebar'
-import JadwalPiket from '@/components/admin/JadwalPiket';
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from 'react';
+import JadwalPiket from '@/components/admin/JadwalPiket';
 
 function page() {
   const { user, loading } = useAuth();
@@ -28,7 +28,7 @@ function page() {
        <div className="flex">
       <Sidebar />
       <main className="flex-1"> 
-        <JadwalPiket />
+      <JadwalPiket/>
       </main>
     </div>
     </>

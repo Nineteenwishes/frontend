@@ -51,7 +51,7 @@ function DaftarObat() {
               placeholder="Cari obat..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
             />
             <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
               <svg
@@ -83,7 +83,7 @@ function DaftarObat() {
               transition={{ duration: 0.3 }}
               className={`border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer ${
                 selectedMedicineId === medicine.id
-                  ? "border-blue-500 ring-2 ring-blue-200"
+                  ? "border-red-500 ring-2 ring-red-200"
                   : "border-gray-200"
               }`}
               onClick={() => handleCardClick(medicine)}

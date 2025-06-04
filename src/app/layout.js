@@ -5,6 +5,7 @@ import { StudentProvider } from "@/context/StudentContext";
 import { MedicineProvider } from "@/context/MedicinesContext";
 import { KunjunganUksProvider } from "@/context/KunjunganUksContext";
 import { RiwayatKunjunganUksProvider } from '@/context/RiwayatKunjunganUksContext';
+import { JadwalPiketProvider } from "@/context/JadwalPiketContext";
 
 
 const geistSans = Geist({
@@ -33,7 +34,9 @@ export default function RootLayout({ children }) {
             <MedicineProvider>
               <KunjunganUksProvider>
                 <RiwayatKunjunganUksProvider>
+                  <JadwalPiketProvider>
                   {children}
+                  </JadwalPiketProvider>
                 </RiwayatKunjunganUksProvider>
                 </KunjunganUksProvider>
             </MedicineProvider>

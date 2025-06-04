@@ -136,7 +136,34 @@ export default function Page() {
   // Function to handle yearly export
   const handleYearlyExport = () => {
     const currentYear = new Date().getFullYear();
-    exportRiwayat({ year: currentYear });
+    const yearlyStats = Array(12).fill(0);
+
+    riwayatList.forEach((visit) => {
+      const visitDate = new Date(visit.tanggal);
+      if (visitDate.getFullYear() === currentYear) {
+        yearlyStats[visitDate.getMonth()]++;
+      }
+    });
+
+    const dataToExport = yearlyStats.map((visits, index) => ({
+      month: [
+        "Januari",
+        "Februari",
+        "Maret",
+        "April",
+        "Mei",
+        "Juni",
+        "Juli",
+        "Agustus",
+        "September",
+        "Oktober",
+        "November",
+        "Desember",
+      ][index],
+      visits: visits,
+    }));
+
+    exportRiwayat({ year: currentYear, data: dataToExport }); // Pass the processed data
     setIsDropdownOpen(false); // Close dropdown after action
   };
 
@@ -165,15 +192,15 @@ export default function Page() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50"> {/* Changed from flex-col to flex */}
+    <div className="flex min-h-screen bg-gray-50"> 
       <Sidebar/>
-      <main className="flex-1 p-6"> {/* flex-1 ensures it takes remaining space */}
+      <main className="flex-1 p-3 sm:p-4 md:p-6"> 
         <div className="max-w-6xl mx-auto">
-          {/* Title and Dropdown Container */}
-          <div className="flex items-center justify-between mb-8 relative">
-            {" "}
+
+          <div className="flex items-center justify-between mb-6 sm:mb-8 relative">
+            
             {/* Added relative positioning */}
-            <h1 className="text-2xl font-semibold text-gray-900">Statistik</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Statistik</h1>
             {/* Dropdown Button */}
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -182,9 +209,9 @@ export default function Page() {
               aria-expanded={isDropdownOpen}
             >
               {isDropdownOpen ? (
-                <X className="w-6 h-6 text-gray-600" />
+                <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               ) : (
-                <Menu className="w-6 h-6 text-gray-600" />
+                <Menu className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               )}
             </button>
             {/* Dropdown Menu */}
@@ -194,7 +221,7 @@ export default function Page() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
-                className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 ring-1 ring-black ring-opacity-5 focus:outline-none"
+                className="absolute top-full right-0 mt-2 w-40 sm:w-48 bg-white rounded-md shadow-lg z-10 ring-1 ring-black ring-opacity-5 focus:outline-none"
                 role="menu"
                 aria-orientation="vertical"
                 aria-labelledby="menu-button"
@@ -202,14 +229,14 @@ export default function Page() {
                 <div className="py-1" role="none">
                   <button
                     onClick={handleYearlyExport}
-                    className="text-gray-700 block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                    className="text-gray-700 block w-full text-left px-3 sm:px-4 py-2 text-sm hover:bg-gray-100"
                     role="menuitem"
                   >
                     Download Tahunan
                   </button>
                   <button
                     onClick={handleWeeklyExport}
-                    className="text-gray-700 block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                    className="text-gray-700 block w-full text-left px-3 sm:px-4 py-2 text-sm hover:bg-gray-100"
                     role="menuitem"
                   >
                     Download Pekan
@@ -219,22 +246,22 @@ export default function Page() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6">
             {/* Yearly Chart - Full Width */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="bg-white rounded-xl p-6 shadow-sm"
+              className="bg-white rounded-xl p-4 sm:p-6 shadow-sm"
             >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-gray-900">Tahun</h2>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2 sm:gap-0">
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900">Tahun</h2>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
                   <span>📅</span>
                   <span>{new Date().getFullYear()}</span>
                 </div>
               </div>
-              <div className="h-64">
+              <div className="h-48 sm:h-56 md:h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={yearlyData}
@@ -244,14 +271,14 @@ export default function Page() {
                       dataKey="month"
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 12, fill: "#6B7280" }}
+                      tick={{ fontSize: 10, fill: "#6B7280" }}
                       interval={0}
                       height={60}
                     />
                     <YAxis
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 12, fill: "#6B7280" }}
+                      tick={{ fontSize: 10, fill: "#6B7280" }}
                       domain={[0, 10]}
                       ticks={[0, 2, 4, 6, 8, 10]}
                     />
@@ -267,28 +294,34 @@ export default function Page() {
             </motion.div>
 
             {/* Weekly Chart and Stats Card - Side by Side */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
               {/* Weekly Chart - Takes 2/3 width */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm"
+                className="lg:col-span-2 bg-white rounded-xl p-4 sm:p-6 shadow-sm"
               >
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-semibold text-gray-900">Pekan</h2>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2 sm:gap-0">
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900">Pekan</h2>
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <span>📅</span>
-                    <span>
+                    <span className="hidden sm:inline">
                       {new Date().toLocaleDateString("id-ID", {
                         day: "numeric",
                         month: "long",
                         year: "numeric",
                       })}
                     </span>
+                    <span className="sm:hidden">
+                      {new Date().toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "short",
+                      })}
+                    </span>
                   </div>
                 </div>
-                <div className="h-64">
+                <div className="h-48 sm:h-56 md:h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={weeklyData}
@@ -298,12 +331,12 @@ export default function Page() {
                         dataKey="day"
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fontSize: 12, fill: "#6B7280" }}
+                        tick={{ fontSize: 10, fill: "#6B7280" }}
                       />
                       <YAxis
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fontSize: 12, fill: "#6B7280" }}
+                        tick={{ fontSize: 10, fill: "#6B7280" }}
                         domain={[0, 10]}
                         ticks={[0, 2, 4, 6, 8, 10]}
                       />
@@ -319,27 +352,27 @@ export default function Page() {
               </motion.div>
 
               {/* Stats Card - Takes 1/3 width */}
-              <div className="lg:col-span-1 space-y-6">
+              <div className="lg:col-span-1 space-y-4 sm:space-y-6">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.4 }}
-                  className="bg-white rounded-xl p-6 shadow-sm"
+                  className="bg-white rounded-xl p-4 sm:p-6 shadow-sm"
                 >
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
                     Hari ini
                   </h3>
 
                   {/* Total Siswa Sakit Card */}
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Target className="w-6 h-6 text-red-500" />
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Target className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />
                     </div>
                     <div className="flex-1">
-                      <div className="text-3xl font-bold text-gray-900 mb-1">
+                      <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
                         {todayStats.activeVisits}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-xs sm:text-sm text-gray-500">
                         Siswa sakit hari ini
                       </div>
                     </div>

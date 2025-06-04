@@ -371,7 +371,7 @@ export default function RiwayatKunjungan() {
                           onClick={() => handleWeekSelect(week)}
                           className={`w-full text-left px-4 py-2 text-sm transition-colors ${
                             selectedWeek === week 
-                              ? 'bg-blue-50 text-blue-700 font-medium' 
+                              ? 'bg-red-50 text-red-700 font-medium' 
                               : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                           }`}
                         >
@@ -409,7 +409,7 @@ export default function RiwayatKunjungan() {
                     Gejala
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    Tanggal
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Masuk
@@ -470,15 +470,7 @@ export default function RiwayatKunjungan() {
                         {visit.gejala || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span
-                          className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            visit.status.toLowerCase() === "masuk uks"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {visit.status}
-                        </span>
+                        {visit.tanggal || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {visit.jam_masuk || "-"}

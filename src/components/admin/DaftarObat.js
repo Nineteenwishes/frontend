@@ -85,27 +85,93 @@ function DaftarObat() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      {/* Mobile View - Cards */}
+      <div className="md:hidden grid grid-cols-1 gap-4 mb-6">
+        {filteredMedicines.map((medicine) => (
+          <motion.div
+            key={medicine.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="bg-white rounded-lg shadow p-4"
+          >
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0 h-16 w-16 relative">
+                <Image
+                  src={medicine.foto ? `http://localhost:8000/storage/${medicine.foto}` : "/images/default-obat.png"}
+                  alt={medicine.nama}
+                  fill
+                  className="rounded-lg object-cover"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div 
+                  className="text-lg font-medium text-gray-900 truncate cursor-pointer hover:text-red-600" 
+                  onClick={() => handleCardClick(medicine)}
+                >
+                  {medicine.nama}
+                </div>
+                <div className="text-sm text-gray-500">{medicine.jenis}</div>
+                <div className="flex items-center mt-1">
+                  <span className={`px-2 text-xs leading-5 font-semibold rounded-full ${
+                    medicine.stok > 5 ? 'bg-green-100 text-green-800' : 
+                    medicine.stok > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {medicine.stok > 5 ? 'Tersedia' : medicine.stok > 0 ? 'Hampir Habis' : 'Kosong'}
+                  </span>
+                  <span className="ml-2 text-sm text-gray-500">Stok: {medicine.stok}</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-3">
+              <button
+                onClick={() => handleCardClick(medicine)}
+                className="text-green-600 hover:text-green-900 p-1"
+                title="Detail"
+              >
+                <Info className="h-5 w-5" />
+              </button>
+              <Link
+                href={`/admin/edit-obat?id=${medicine.id}`}
+                className="text-yellow-600 hover:text-yellow-900 p-1"
+                title="Edit"
+              >
+                <Edit className="h-5 w-5" />
+              </Link>
+              <button
+                onClick={() => handleDeleteMedicine(medicine.id)}
+                className="text-red-600 hover:text-red-900 p-1"
+                title="Hapus"
+              >
+                <Trash className="h-5 w-5" />
+              </button>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Desktop View - Table */}
+      <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Foto
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Nama Obat
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Jenis
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Stok
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Aksi
                 </th>
               </tr>
@@ -119,7 +185,7 @@ function DaftarObat() {
                   exit={{ opacity: 0 }}
                   className="hover:bg-gray-50"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 py-4 whitespace-nowrap">
                     <div className="flex-shrink-0 h-10 w-10">
                       <Image
                         src={medicine.foto ? `http://localhost:8000/storage/${medicine.foto}` : "/images/default-obat.png"}
@@ -130,18 +196,18 @@ function DaftarObat() {
                       />
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900 cursor-pointer hover:text-red-600" onClick={() => handleCardClick(medicine)}>
                       {medicine.nama}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                     {medicine.jenis}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                     {medicine.stok}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       medicine.stok > 5 ? 'bg-green-100 text-green-800' : 
                       medicine.stok > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
@@ -149,7 +215,7 @@ function DaftarObat() {
                       {medicine.stok > 5 ? 'Tersedia' : medicine.stok > 0 ? 'Hampir Habis' : 'Kosong'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-3">
                       <button
                         onClick={() => handleCardClick(medicine)}
@@ -181,6 +247,21 @@ function DaftarObat() {
         </div>
       </div>
 
+      {/* Empty State */}
+      {filteredMedicines.length === 0 && (
+        <div className="bg-white rounded-lg shadow p-8 text-center">
+          <div className="text-gray-500 mb-4">Tidak ada obat yang ditemukan</div>
+          {searchTerm && (
+            <button 
+              onClick={() => setSearchTerm('')}
+              className="text-red-600 hover:text-red-800 font-medium"
+            >
+              Reset pencarian
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Medicine Detail Modal */}
       <AnimatePresence>
         {showModal && selectedMedicine && (
@@ -195,10 +276,11 @@ function DaftarObat() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 50, opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-2"
             >
               <div className="p-6">
                 <div className="flex justify-between items-start mb-6">
+                  <h2 className="text-xl font-bold">Detail Obat</h2>
                   <button
                     onClick={() => setShowModal(false)}
                     className="text-gray-500 hover:text-gray-700"
@@ -209,7 +291,7 @@ function DaftarObat() {
 
                 <div className="space-y-6">
                   <div className="relative">
-                    <div className="w-full h-64 mb-4 relative">
+                    <div className="w-full h-48 md:h-64 mb-4 relative">
                       <Image
                         src={
                           selectedMedicine.foto
@@ -217,9 +299,8 @@ function DaftarObat() {
                             : "/images/default-obat.png"
                         }
                         alt={selectedMedicine.nama}
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-lg"
+                        fill
+                        className="rounded-lg object-cover"
                       />
                     </div>
                   </div>

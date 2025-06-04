@@ -1,14 +1,14 @@
 "use client";
 import React, { useState } from "react";
-import { Eye, EyeOff, Activity } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
-export default function HealthcareLoginPage() {
+export default function Login() {
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -45,23 +45,72 @@ export default function HealthcareLoginPage() {
   };
 
   return (
-    <>
-      <div className="min-h-screen bg-gray-100 flex">
-        {/* Left side - Login Form */}
-        <div className="w-full md:w-1/2 bg-white p-8 flex items-center justify-center">
-          <div className="w-full max-w-md">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Log In</h2>
+    <div className="min-h-screen bg-gray-100">
+      {/* Mobile Header dengan Logo - Visible hanya di mobile/tablet */}
+      <div className="md:hidden bg-white shadow-sm relative z-10">
+        <div className="flex items-center justify-center py-4 px-4">
+          <Image
+            src="/Logo ukes.png"
+            alt="Logo"
+            width={40}
+            height={40}
+            className="mr-2"
+          />
+          <span className="font-bold text-gray-800 text-xl">Ukes</span>
+        </div>
+      </div>
 
+      {/* Main Container */}
+      <div className="flex flex-col md:flex-row-reverse min-h-screen md:min-h-screen">
+        {/* Login Form Section - Kanan di desktop, atas di mobile */}
+        <div className="w-full md:w-1/2 bg-white flex items-center justify-center p-4 sm:p-6 md:p-8">
+          <div className="w-full max-w-md">
+            {/* Logo untuk Desktop - Hidden di mobile */}
+            <div className="hidden md:flex items-center justify-center mb-8">
+              <Image
+                src="/Logo ukes.png"
+                alt="Logo"
+                width={48}
+                height={48}
+                className="mr-3"
+              />
+              <span className="font-bold text-gray-800 text-2xl">Ukes</span>
+            </div>
+
+            {/* Header Text */}
+            <div className="text-center md:text-left mb-6">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
+                LogIn
+              </h2>
+              <p className="text-gray-600 text-sm sm:text-base">
+                Silakan masuk ke akun Anda
+              </p>
+            </div>
+
+            {/* Error Message */}
             {error && (
-              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                {error}
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+                <div className="flex items-start">
+                  <svg
+                    className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="text-sm">{error}</span>
+                </div>
               </div>
             )}
 
-            {/* Email */}
-            <div className="mb-4">
+            {/* Username Field */}
+            <div className="mb-5">
               <label
-                className="block text-gray-700 text-sm font-medium mb-2"
+                className="block text-gray-700 text-sm font-semibold mb-2"
                 htmlFor="username"
               >
                 Username
@@ -71,15 +120,15 @@ export default function HealthcareLoginPage() {
                 type="username"
                 value={username}
                 onChange={(e) => setUserName(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
-                placeholder="Username"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
+                placeholder="Masukkan username Anda"
               />
             </div>
 
-            {/* Password */}
-            <div className="mb-4">
+            {/* Password Field */}
+            <div className="mb-6">
               <label
-                className="block text-gray-700 text-sm font-medium mb-2"
+                className="block text-gray-700 text-sm font-semibold mb-2"
                 htmlFor="password"
               >
                 Password
@@ -90,31 +139,40 @@ export default function HealthcareLoginPage() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
-                  placeholder="Password"
+                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
+                  placeholder="Masukkan password Anda"
                 />
-                <div
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff size={18} className="text-gray-500" />
+                    <EyeOff
+                      size={20}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                    />
                   ) : (
-                    <Eye size={18} className="text-gray-500" />
+                    <Eye
+                      size={20}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                    />
                   )}
-                </div>
+                </button>
               </div>
             </div>
 
-            {/* Login button */}
+            {/* Login Button */}
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className={`w-full bg-red-500 text-white py-2 px-4 rounded 
+              className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition duration-300 text-sm sm:text-base mb-4
                 ${
-                  loading ? "opacity-70 cursor-not-allowed" : "hover:bg-red-600"
+                  loading
+                    ? "opacity-70 cursor-not-allowed bg-red-500"
+                    : "bg-red-500 hover:bg-red-600 active:bg-red-700 transform hover:scale-[1.02] active:scale-[0.98]"
                 } 
-                transition duration-300 mb-4 flex items-center justify-center`}
+                flex items-center justify-center`}
             >
               {loading ? (
                 <>
@@ -131,12 +189,12 @@ export default function HealthcareLoginPage() {
                       r="10"
                       stroke="currentColor"
                       strokeWidth="4"
-                    ></circle>
+                    />
                     <path
                       className="opacity-75"
                       fill="currentColor"
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
+                    />
                   </svg>
                   Memproses...
                 </>
@@ -144,68 +202,25 @@ export default function HealthcareLoginPage() {
                 "MASUK"
               )}
             </button>
+
+            {/* Additional Links */}
           </div>
         </div>
 
-        {/* Right side - Image/Logo */}
-        <div className="hidden md:block md:w-1/2 bg-gradient-to-br from-red-500 to-red-600 p-8 lg:flex items-center justify-center">
-          <div className="w-full max-w-md flex flex-col items-center justify-center">
-            <div className="bg-white/10 rounded-lg p-16 mb-8">
-              <svg
-                className="w-24 h-24 text-white"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M12 22L3 17V7L12 2L21 7V17L12 22Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M12 22L12 2"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M12 12L3 7"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M12 12L21 7"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-            <div className="text-center">
-              <h1 className="text-3xl font-bold text-white">MedCare</h1>
-              <p className="text-red-100 mt-2">
-                Sistem Informasi Kesehatan Terpadu
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Version Logo - Only visible on mobile */}
-        <div className="md:hidden absolute top-4 left-4">
-          <div className="flex items-center">
-            <div className="bg-gradient-to-r from-teal-500 to-blue-500 p-2 rounded-lg mr-2">
-              <Activity size={24} className="text-white" />
-            </div>
-            <span className="font-bold text-gray-800">MedCare</span>
-          </div>
+        {/* Image Section - Kiri di desktop, hidden di mobile */}
+        <div className="hidden md:block md:w-1/2 relative overflow-hidden">
+          <Image
+            src="/login.png"
+            alt="Login Image"
+            fill
+            sizes="50vw"
+            className="object-cover"
+            priority
+          />
+          {/* Optional: Overlay gradient untuk readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent"></div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

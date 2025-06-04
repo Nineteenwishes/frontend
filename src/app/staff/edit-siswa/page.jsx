@@ -1,309 +1,454 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useKunjunganUks } from '@/context/KunjunganUksContext';
-import { useStudent } from '@/context/StudentContext';
-import Swal from 'sweetalert2';
-import Navbar from '@/components/Navbar';
+"use client";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Navbar from "@/components/Navbar";
+import { useKunjunganUks } from "@/context/KunjunganUksContext";
+import { ArrowLeft, Upload, X } from "lucide-react";
+import Link from "next/link";
+import { useStudent } from "@/context/StudentContext";
+import Swal from "sweetalert2";
+import { useMedicine } from "@/context/MedicinesContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Page() {
-    const { user, loading } = useAuth();
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const { updateKunjungan, getKunjunganById } = useKunjunganUks();
-    const { getStudentByNis } = useStudent();
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { updateKunjungan, getKunjunganById } = useKunjunganUks();
+  const { getStudentByNis } = useStudent();
+  const { allMedicines, fetchMedicines } = useMedicine();
 
-    const [form, setForm] = useState({
-        nis: '',
-        nama: '',
-        kelas: '',
-        gejala: '',
-        keterangan: '',
-        medicine_id: '',
-        foto: null,
-        status: 'masuk' // default masuk
-    });
-    
+  const [form, setForm] = useState({
+    nis: "",
+    nama: "",
+    kelas: "",
+    gejala: "",
+    keterangan: "",
+    medicines_id: "",
+    foto: null,
+  });
 
-    const [fotoPreview, setFotoPreview] = useState(null);
-    const [formFetched, setFormFetched] = useState(false);
+  const [fotoPreview, setFotoPreview] = useState(null);
+  const [error, setError] = useState(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [formFetched, setFormFetched] = useState(false);
 
-    useEffect(() => {
-        if (!loading) {
-            if (user && user.role === 'admin') {
-                router.replace('/admin/dashboard');
+  useEffect(() => {
+    if (!loading) {
+      if (user && user.role === "admin") {
+        router.replace("/admin/dashboard");
+      }
+      if (user && user.role === "user") {
+        router.replace("/dashboard");
+      }
+      if (!user) {
+        router.replace("/");
+      }
+    }
+  }, [user, loading, router]);
+
+  useEffect(() => {
+    fetchMedicines();
+  }, []);
+
+  useEffect(() => {
+    const fetchVisitData = async () => {
+      const id = searchParams.get("id");
+      if (id && !formFetched) {
+        try {
+          const kunjungan = await getKunjunganById(id);
+          if (kunjungan.success) {
+            const data = kunjungan.data;
+            setForm((prev) => ({
+              ...prev,
+              nis: data.nis || "",
+              nama: data.nama || "",
+              kelas: data.kelas || "",
+              gejala: data.gejala || "",
+              keterangan: data.keterangan || "",
+              medicines_id: data.medicine_id || "",
+
+            }));
+            if (data.foto) {
+              setFotoPreview(`http://localhost:8000/storage/${data.foto}`);
             }
-            if (user && user.role === 'user') {
-                router.replace('/dashboard');
-            }
-            if (!user) {
-                router.replace('/');
-            }
+            setFormFetched(true);
+          }
+        } catch (err) {
+          console.error("Error fetching visit data:", err);
         }
-    }, [user, loading, router]);
+      }
+    };
 
-    useEffect(() => {
-        const fetchVisitData = async () => {
-            const id = searchParams.get('id');
-            if (id && !formFetched) {
-                try {
-                    const kunjungan = await getKunjunganById(id);
-                    if (kunjungan.success) {
-                        const data = kunjungan.data;
-                        setForm(prev => ({
-                            ...prev,
-                            nis: data.nis || '',
-                            nama: data.nama || '',
-                            kelas: data.kelas || '',
-                            gejala: data.gejala || '',
-                            keterangan: data.keterangan || '',
-                            medicine_id: data.medicine_id || '',
-                            status: data.status || 'masuk' // Tambahkan status
-                        }));
-                        if (data.foto) {
-                            setFotoPreview(`http://localhost:8000/storage/${data.foto}`);
-                        }
-                        setFormFetched(true);
-                    }
-                } catch (err) {
-                    console.error('Error fetching visit data:', err);
-                }
-            }
-        };
+    fetchVisitData();
+  }, [searchParams, getKunjunganById]);
 
-        fetchVisitData();
-    }, [searchParams, getKunjunganById]);
+  const handleNisChange = async (e) => {
+    const { value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      nis: value,
+      nama: "",
+      kelas: "",
+    }));
 
-    const handleNisChange = async (e) => {
-        const { value } = e.target;
-        setForm(prev => ({
+    if (value.length >= 9) {
+      try {
+        const result = await getStudentByNis(value);
+        if (result.success) {
+          const student = result.data;
+          setForm((prev) => ({
             ...prev,
             nis: value,
-            nama: '',
-            kelas: ''
-        }));
-
-        if (value.length >= 9) {
-            try {
-                const result = await getStudentByNis(value);
-                if (result.success) {
-                    const student = result.data;
-                    setForm(prev => ({
-                        ...prev,
-                        nis: value,
-                        nama: student.nama,
-                        kelas: student.kelas
-                    }));
-                }
-            } catch (error) {
-                console.error('Error fetching student data:', error);
-            }
+            nama: student.nama,
+            kelas: student.kelas,
+          }));
         }
-    };
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setForm(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setForm(prev => ({
-                ...prev,
-                foto: file
-            }));
-            setFotoPreview(URL.createObjectURL(file));
-        }
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const id = searchParams.get('id');
-            if (!id) return;
-
-            const updatedData = {};
-            if (form.nis) updatedData.nis = form.nis;
-            if (form.gejala) updatedData.gejala = form.gejala;
-            if (form.keterangan) updatedData.keterangan = form.keterangan;
-            if (form.medicine_id) updatedData.obat = form.medicine_id;
-            if (form.foto instanceof File) updatedData.foto = form.foto;
-
-            console.log('Sending update data:', updatedData); // Tambahkan logging data yang dikirim
-
-            const result = await updateKunjungan(id, updatedData);
-            console.log('Update response:', result); // Tambahkan logging response
-
-            // Periksa berbagai kemungkinan format response sukses
-            if (result?.data?.status === 'success' || 
-                result?.status === 'success' || 
-                result?.success === true || 
-                (result?.data && !result?.data?.error)) { // Tambahkan pengecekan tidak ada error
-                
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: 'Data kunjungan berhasil diupdate',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-                
-                setTimeout(() => {
-                    router.push('/staff/daftar-siswa');
-                }, 1500);
-            } else {
-                // Tampilkan pesan error yang lebih spesifik
-                const errorMessage = result?.data?.message || result?.message || 'Update gagal';
-                throw new Error(errorMessage);
-            }
-        } catch (err) {
-            console.error('Error detail:', err);
-            console.error('Error response:', err.response); // Tambahkan logging response error
-
-            if (err.response?.status === 422) {
-                const errors = err.response.data.errors;
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validasi Gagal',
-                    text: Object.values(errors).flat().join('\n')
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: err.message || 'Gagal mengupdate data kunjungan'
-                });
-            }
-        }
-    };
-
-    if (loading || !user || user.role !== 'staff') {
-        return null;
+      } catch (error) {
+        console.error("Error fetching student data:", error);
+      }
     }
+  };
 
-    return (
-        <>
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
-            <Navbar />
-        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-            
-            <h1 className="text-2xl font-bold mb-6">Edit Data Kunjungan UKS</h1>
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setForm((prev) => ({
+        ...prev,
+        foto: file,
+      }));
+      setFotoPreview(URL.createObjectURL(file));
+    }
+  };
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label htmlFor="nis" className="block text-sm font-medium text-gray-700 mb-1">NIS Siswa</label>
-                    <input
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("image/")) {
+      setForm((prev) => ({
+        ...prev,
+        foto: file,
+      }));
+      setFotoPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const removePhoto = () => {
+    setForm((prev) => ({
+      ...prev,
+      foto: null,
+    }));
+    setFotoPreview(null);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const id = searchParams.get("id");
+      if (!id) return;
+
+      if (!form.nis) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "NIS siswa wajib diisi",
+        });
+        return;
+      }
+
+      if (!form.gejala) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Gejala wajib diisi",
+        });
+        return;
+      }
+
+      const updatedData = {
+        nis: form.nis,
+        gejala: form.gejala,
+        keterangan: form.keterangan || "",
+        obat: form.medicines_id || "",
+        foto: form.foto,
+      };
+
+      const result = await updateKunjungan(id, updatedData);
+
+      if (result?.status === "success" || result?.success) {
+        await Swal.fire({
+          icon: "success",
+          title: "Berhasil",
+          text: result.message || "Data kunjungan UKS berhasil diperbarui",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        router.push("/staff/daftar-siswa");
+      } else {
+        console.error("Error response:", result);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: result?.message || "Gagal memperbarui data kunjungan UKS",
+        });
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err?.message || "Gagal memperbarui data kunjungan UKS",
+      });
+    }
+  };
+
+  if (loading || !user || user.role !== "staff") {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <Navbar />
+      <main className="flex-1 container mx-auto px-4 py-6">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="mb-6">
+            <Link
+              href="/staff/daftar-siswa"
+              className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Kembali Ke Daftar Siswa Sakit
+            </Link>
+          </div>
+
+          {/* Form Card */}
+          <div className="bg-white rounded-lg shadow-sm border">
+            <div className="p-6 border-b border-gray-200">
+              <h1 className="text-xl font-semibold text-gray-900">
+                Edit Data Siswa
+              </h1>
+            </div>
+
+            <div className="p-6">
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Left Column */}
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        NIS
+                      </label>
+                      <input
                         type="text"
-                        id="nis"
                         name="nis"
                         value={form.nis}
                         onChange={handleNisChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Masukkan NIS siswa"
                         required
-                    />
-                </div>
+                      />
+                    </div>
 
-                <div>
-                    <label htmlFor="nama" className="block text-sm font-medium text-gray-700 mb-1">Nama Siswa</label>
-                    <input
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Nama
+                      </label>
+                      <input
                         type="text"
-                        id="nama"
                         name="nama"
                         value={form.nama}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                    />
-                </div>
+                        readOnly
+                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                        placeholder="Nama akan terisi otomatis"
+                      />
+                    </div>
 
-                <div>
-                    <label htmlFor="kelas" className="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
-                    <input
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Kelas
+                      </label>
+                      <input
                         type="text"
-                        id="kelas"
                         name="kelas"
                         value={form.kelas}
                         readOnly
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
-                    />
-                </div>
+                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                        placeholder="Kelas akan terisi otomatis"
+                      />
+                    </div>
 
-                <div>
-                    <label htmlFor="gejala" className="block text-sm font-medium text-gray-700 mb-1">Gejala</label>
-                    <textarea
-                        id="gejala"
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Gejala
+                      </label>
+                      <textarea
                         name="gejala"
                         value={form.gejala}
                         onChange={handleChange}
-                        rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        rows={4}
+                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                        placeholder="Deskripsikan gejala yang dialami siswa"
                         required
-                    />
-                </div>
+                      />
+                    </div>
 
-                <div>
-                    <label htmlFor="keterangan" className="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
-                    <textarea
-                        id="keterangan"
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Obat
+                      </label>
+                      <div className="relative">
+                        <select
+                          name="medicines_id"
+                          value={form.medicines_id}
+                          onChange={handleChange}
+                          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                        >
+                          <option value="">Pilih obat yang diberikan</option>
+                          {allMedicines.map((medicine) => (
+                            <option key={medicine.id} value={medicine.id}>
+                              {medicine.nama}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                          <svg
+                            className="w-4 h-4 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 9l-7 7-7-7"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column */}
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Keterangan
+                      </label>
+                      <textarea
                         name="keterangan"
                         value={form.keterangan}
                         onChange={handleChange}
-                        rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                        rows={4}
+                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                        placeholder="Keterangan tambahan (opsional)"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Foto
+                      </label>
+                      <div
+                        className={`relative border-2 border-dashed rounded-lg p-6 transition-colors ${
+                          isDragOver
+                            ? "border-blue-400 bg-blue-50"
+                            : fotoPreview
+                            ? "border-green-300 bg-green-50"
+                            : "border-gray-300 bg-gray-50"
+                        }`}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                      >
+                        {fotoPreview ? (
+                          <div className="relative">
+                            <img
+                              src={fotoPreview}
+                              alt="Preview"
+                              className="w-full h-48 object-cover rounded-lg"
+                            />
+                            <button
+                              type="button"
+                              onClick={removePhoto}
+                              className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="text-center">
+                            <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                            <div className="text-sm text-gray-600 mb-2">
+                              Drag your image here, or{" "}
+                              <label className="text-blue-600 hover:text-blue-700 cursor-pointer font-medium">
+                                click to browse
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleFileChange}
+                                  className="hidden"
+                                />
+                              </label>
+                            </div>
+                            <p className="text-xs text-gray-500">
+                              PNG, JPG, GIF up to 10MB
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                    <label htmlFor="medicine_id" className="block text-sm font-medium text-gray-700 mb-1">Obat yang Diberikan</label>
-                    <select
-                        id="medicine_id"
-                        name="medicine_id"
-                        value={form.medicine_id}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        <option value="">Pilih Obat</option>
-                    </select>
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
+                  <Link
+                    href="/staff/daftar-siswa"
+                    className="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                  >
+                    Batal
+                  </Link>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    <span className="mr-2">✓</span>
+                    Simpan Perubahan
+                  </button>
                 </div>
-
-                <div>
-                    <label htmlFor="foto" className="block text-sm font-medium text-gray-700 mb-1">Foto</label>
-                    <input
-                        type="file"
-                        id="foto"
-                        name="foto"
-                        onChange={handleFileChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    {fotoPreview && (
-                        <div className="mt-4">
-                            <img src={fotoPreview} alt="Preview Foto" className="max-w-full h-auto rounded-md" />
-                        </div>
-                    )}
-                </div>
-
-                <div className="flex justify-end space-x-4">
-                    <button
-                        type="button"
-                        onClick={() => router.push('/staff/daftar-siswa')}
-                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        Batal
-                    </button>
-                    <button
-                        type="submit"
-                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        Simpan
-                    </button>
-                </div>
-            </form>
+              </form>
+            </div>
+          </div>
         </div>
-        </>
-    );
+      </main>
+    </div>
+  );
 }

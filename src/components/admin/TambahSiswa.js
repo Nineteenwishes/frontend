@@ -131,7 +131,7 @@ export default function FormSiswa() {
       {/* Notifikasi Konfirmasi */}
       {showNotif && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="fixed inset-0 bg-black opacity-50"></div>
+          <div className="fixed inset-0 "></div>
           <div className="card bg-white rounded-lg shadow-xl w-[400px] relative z-10 p-6">
             <div className="header flex items-center gap-4">
               <span className="icon flex-shrink-0 flex items-center justify-center rounded-full bg-red-500 p-2 text-white">

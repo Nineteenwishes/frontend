@@ -1,18 +1,28 @@
 "use client";
-import { Search, LogOut, Info, Plus, Edit, Undo2, Download, Maximize, } from "lucide-react";
+import {
+  Search,
+  LogOut,
+  Info,
+  Plus,
+  Edit,
+  Undo2,
+  Download,
+  Maximize,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useKunjunganUks } from "@/context/KunjunganUksContext";
-import { useRiwayatKunjunganUks } from "@/context/RiwayatKunjunganUksContext";
+import { useMedicine } from "@/context/MedicinesContext"; // Import useMedicine
 import { motion, AnimatePresence } from "framer-motion";
 import Swal from "sweetalert2";
 
 export default function DaftarSiswa() {
-  const { kunjunganList, getAllKunjungan, keluarUks, getKunjunganById } = useKunjunganUks();
-  const { storeRiwayat } = useRiwayatKunjunganUks();
+  const { kunjunganList, getAllKunjungan, keluarUks, getKunjunganById } =
+    useKunjunganUks();
   const [selectedVisitId, setSelectedVisitId] = useState(null);
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [visitData, setVisitData] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     getAllKunjungan();
@@ -30,10 +40,10 @@ export default function DaftarSiswa() {
         confirmButtonText: "Ya, Tandai",
         cancelButtonText: "Batal",
       });
-  
+
       if (confirmResult.isConfirmed) {
         const result = await keluarUks(visitId);
-  
+
         if (result?.status === "success") {
           await Swal.fire({
             icon: "success",
@@ -70,7 +80,7 @@ export default function DaftarSiswa() {
         setShowInfoModal(true);
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -85,7 +95,40 @@ export default function DaftarSiswa() {
     setVisitData(null);
   };
 
+  // Filter kunjunganList based on search term (nama or kelas)
+  const filteredKunjunganList = kunjunganList.filter((visit) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      visit.nama?.toLowerCase().includes(searchLower) ||
+      visit.kelas?.toLowerCase().includes(searchLower)
+    );
+  });
+
   const InfoCardModal = () => {
+    const { getMedicineById, fetchMedicines } = useMedicine(); // Use useMedicine hook
+    const [medicineName, setMedicineName] = useState("-");
+
+    useEffect(() => {
+      fetchMedicines(); // Fetch medicines when component mounts
+    }, []);
+
+    useEffect(() => {
+      const fetchMedicine = async () => {
+        if (visitData?.obat) {
+          try {
+            const medicine = await getMedicineById(visitData.obat);
+            setMedicineName(medicine?.nama || "-");
+          } catch (error) {
+            console.error("Error fetching medicine details:", error);
+            setMedicineName("-");
+          }
+        } else {
+          setMedicineName("-");
+        }
+      };
+      fetchMedicine();
+    }, [visitData?.obat, fetchMedicines]); // Add fetchMedicines to dependency array
+
     if (!visitData) {
       return (
         <div className="fixed inset-0 flex items-center justify-center z-50">
@@ -93,7 +136,9 @@ export default function DaftarSiswa() {
             <div className="flex items-center justify-center min-h-[200px]">
               <div className="relative">
                 <div className="w-12 h-12 border-4 border-red-200 rounded-full animate-spin border-t-red-500"></div>
-                <div className="mt-4 text-center text-gray-600 animate-pulse">Loading...</div>
+                <div className="mt-4 text-center text-gray-600 animate-pulse">
+                  Loading...
+                </div>
               </div>
             </div>
           </div>
@@ -111,21 +156,21 @@ export default function DaftarSiswa() {
       >
         <div className="h-full bg-white shadow-xl overflow-y-auto">
           {/* Close button */}
-          <button 
+          <button
             onClick={handleCloseModal}
             className="absolute top-4 left-4 bg-white rounded-full p-2 shadow-md z-10 hover:bg-gray-100 transition-colors"
           >
             <Undo2 size={20} className="text-gray-700" />
           </button>
-          
+
           {/* Header with Image */}
           <div className="relative">
             {/* Hero Image */}
             <div className="h-48">
               {visitData.foto ? (
-                <img 
+                <img
                   src={`http://localhost:8000/storage/${visitData.foto}`}
-                  alt="Foto kunjungan siswa" 
+                  alt="Foto kunjungan siswa"
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -134,7 +179,7 @@ export default function DaftarSiswa() {
                 </div>
               )}
             </div>
-            
+
             {/* Action buttons */}
             <div className="absolute bottom-4 right-4 flex gap-2">
               <button className="bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-colors">
@@ -148,84 +193,124 @@ export default function DaftarSiswa() {
 
           {/* Form Content */}
           <div className="p-5 space-y-5">
-            {/* NIS */}
-            <div>
-              <label htmlFor="nis" className="block text-sm text-gray-600 mb-1">
-                NIS
-              </label>
-              <input
-                type="text"
-                id="nis"
-                value={visitData.nis || ''}
-                readOnly
-                className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-100"
-              />
+            {/* NIS and Time Selection - Combined in one row */}
+            <div className="grid grid-cols-3 gap-4">
+              {/* NIS */}
+              <div className="col-span-2">
+                <label
+                  htmlFor="nis"
+                  className="block text-sm text-gray-600 mb-1"
+                >
+                  NIS
+                </label>
+                <input
+                  type="text"
+                  id="nis"
+                  value={visitData.nis || ""}
+                  readOnly
+                  className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-100"
+                />
+              </div>
+
+              {/* Time Selection */}
+              <div className="flex flex-col">
+                <label className="block text-sm text-gray-600 mb-1 invisible">
+                  Waktu
+                </label>
+                <div className="flex gap-2 h-full items-end">
+                  <div className="flex-1 px-3 py-2 rounded-lg text-sm border border-gray-300 text-center">
+                    {visitData.jam_masuk || "-"}
+                  </div>
+                  <div className="flex-1 px-3 py-2 rounded-lg text-sm border border-gray-300 text-center">
+                    {visitData.jam_keluar || "-"}
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Name & Class */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="name" className="block text-sm text-gray-600 mb-1">
+                <label
+                  htmlFor="name"
+                  className="block text-sm text-gray-600 mb-1"
+                >
                   Nama
                 </label>
                 <input
                   type="text"
                   id="name"
-                  value={visitData?.nama || ''}
+                  value={visitData?.nama || ""}
                   readOnly
                   className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-100"
                 />
               </div>
               <div>
-                <label htmlFor="class" className="block text-sm text-gray-600 mb-1">
+                <label
+                  htmlFor="class"
+                  className="block text-sm text-gray-600 mb-1"
+                >
                   Kelas
                 </label>
                 <input
                   type="text"
                   id="class"
-                  value={visitData?.kelas || ''}
+                  value={visitData?.kelas || ""}
                   readOnly
                   className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-100"
                 />
-              </div>
-            </div>
-
-            {/* Time Selection */}
-            <div className="flex gap-3 justify-end">
-              <div className="px-4 py-2 rounded-lg text-sm border border-gray-300">
-                {visitData.jam_masuk || "-"}
-              </div>
-              <div className="px-4 py-2 rounded-lg text-sm border border-gray-300">
-                {visitData.jam_keluar || "-"}
               </div>
             </div>
 
             {/* Symptoms & Notes */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="symptoms" className="block text-sm text-gray-600 mb-1">
+                <label
+                  htmlFor="symptoms"
+                  className="block text-sm text-gray-600 mb-1"
+                >
                   Gejala
                 </label>
                 <textarea
                   id="symptoms"
                   rows={4}
-                  value={visitData.gejala || ''}
+                  value={visitData.gejala || ""}
                   readOnly
                   className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 resize-none bg-gray-100"
                 />
               </div>
               <div>
-                <label htmlFor="notes" className="block text-sm text-gray-600 mb-1">
+                <label
+                  htmlFor="notes"
+                  className="block text-sm text-gray-600 mb-1"
+                >
                   Keterangan
                 </label>
                 <textarea
                   id="notes"
                   rows={4}
-                  value={visitData.keterangan || ''}
+                  value={visitData.keterangan || ""}
                   readOnly
                   className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 resize-none bg-gray-100"
                 />
               </div>
+            </div>
+
+            {/* Obat yang Diberikan */}
+            <div>
+              <label
+                htmlFor="medicine"
+                className="block text-sm text-gray-600 mb-1"
+              >
+                Obat yang Diberikan
+              </label>
+              <input
+                type="text"
+                id="medicine"
+                value={medicineName}
+                readOnly
+                className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-100"
+              />
             </div>
           </div>
         </div>
@@ -241,9 +326,7 @@ export default function DaftarSiswa() {
       className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative"
     >
       {/* Modal Info Card */}
-      <AnimatePresence>
-        {showInfoModal && <InfoCardModal />}
-      </AnimatePresence>
+      <AnimatePresence>{showInfoModal && <InfoCardModal />}</AnimatePresence>
 
       {/* Konten utama daftar siswa */}
       <div className="flex justify-between items-center mb-6">
@@ -255,8 +338,10 @@ export default function DaftarSiswa() {
             </div>
             <input
               type="text"
-              placeholder="Cari..."
+              placeholder="Cari nama atau kelas..."
               className="pl-10 pr-4 py-2 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
@@ -297,75 +382,79 @@ export default function DaftarSiswa() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {kunjunganList.map((visit, index) => (
-                <motion.tr
-                  key={visit.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className={`hover:bg-gray-50 transition-colors ${
-                    visit.status.toLowerCase() === "masuk uks"
-                      ? "bg-white"
-                      : ""
-                  }`}
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {visit.nama || "-"}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {visit.kelas || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        visit.status.toLowerCase() === "masuk uks"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {visit.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {visit.jam_masuk || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {visit.jam_keluar || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
-                      <button
-                        className="text-black hover:text-slate-700"
-                        onClick={() => handleInfoClick(visit.id)}
-                      >
-                        <Info className="h-5 w-5" />
-                      </button>
-
-                      <button
-                        onClick={() => handleMarkOut(visit.id)}
-                        className={`${
-                          visit.status.toLowerCase() === "keluar uks"
-                            ? "text-gray-400 cursor-not-allowed"
-                            : "text-red-600 hover:text-red-900"
+              {filteredKunjunganList.length > 0 ? (
+                filteredKunjunganList.map((visit, index) => (
+                  <motion.tr
+                    key={visit.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    className={`hover:bg-gray-50 transition-colors ${
+                      visit.status.toLowerCase() === "masuk uks" ? "bg-white" : ""
+                    }`}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {visit.nama || "-"}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {visit.kelas || "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          visit.status.toLowerCase() === "masuk uks"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
                         }`}
-                        disabled={
-                          visit.status.toLowerCase() === "keluar uks"
-                        }
                       >
-                        <LogOut className="h-5 w-5" />
-                      </button>
-                      <Link
-                        href={`/staff/edit-siswa?id=${visit.id}`}
-                        className="text-black hover:text-slate-700"
-                      >
-                        <Edit className="h-5 w-5" />
-                      </Link>
-                    </div>
+                        {visit.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {visit.jam_masuk || "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {visit.jam_keluar || "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-2">
+                        <button
+                          className="text-black hover:text-slate-700"
+                          onClick={() => handleInfoClick(visit.id)}
+                        >
+                          <Info className="h-5 w-5" />
+                        </button>
+
+                        <button
+                          onClick={() => handleMarkOut(visit.id)}
+                          className={`${
+                            visit.status.toLowerCase() === "keluar uks"
+                              ? "text-gray-400 cursor-not-allowed"
+                              : "text-red-600 hover:text-red-900"
+                          }`}
+                          disabled={visit.status.toLowerCase() === "keluar uks"}
+                        >
+                          <LogOut className="h-5 w-5" />
+                        </button>
+                        <Link
+                          href={`/staff/edit-siswa?id=${visit.id}`}
+                          className="text-black hover:text-slate-700"
+                        >
+                          <Edit className="h-5 w-5" />
+                        </Link>
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
+                    {searchTerm ? "Tidak ditemukan data yang sesuai" : "Tidak ada data"}
                   </td>
-                </motion.tr>
-              ))}
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
