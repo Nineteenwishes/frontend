@@ -20,7 +20,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const router = useRouter();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   const handleLogout = async () => {
     await logout();
@@ -32,7 +32,8 @@ export default function Sidebar() {
     { icon: <Users />, label: "Data Siswa", path: "/admin/data-siswa" },
     { icon: <Pill />, label: "Daftar Obat", path: "/admin/data-obat" },
     { icon: <ChartBar />, label: "Statistik UKS", path: "/admin/statistik" },
-    {icon: <User />, label: "User Management", path: "/admin/user-management"},
+    { icon: <User />, label: "User Management", path: "/admin/user-management" },
+    { icon: <Calendar />, label: "Jadwal Piket", path: "/admin/jadwal-piket" },
     { icon: <History />, label: "Riwayat", path: "/admin/riwayat" },
   ];
 
@@ -53,9 +54,11 @@ export default function Sidebar() {
             {!isCollapsed && (
               <div className="overflow-hidden transition-all duration-300">
                 <h3 className="font-medium text-white truncate">
-                  dr. Rini Susanti
+                  {user?.name || "Pengguna"}
                 </h3>
-                <p className="text-sm text-red-100 truncate">Dokter UKS</p>
+                <p className="text-sm text-red-100 truncate">
+                  {user?.username || "-"}
+                </p>
               </div>
             )}
           </div>
@@ -96,7 +99,7 @@ export default function Sidebar() {
           ))}
         </nav>
 
-        {/* Tombol Logout di bagian bawah */}
+        {/* Tombol Logout */}
         <div className="p-4 border-t border-red-400">
           <button
             onClick={handleLogout}
@@ -111,7 +114,7 @@ export default function Sidebar() {
           </button>
         </div>
 
-        {/* Improved Toggle Button */}
+        {/* Tombol Toggle Sidebar */}
         <div className="absolute -right-3 top-1/2 transform -translate-y-1/2">
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}

@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { Undo2 } from "lucide-react";
+import { Undo2, Package, Pill } from "lucide-react";
 import { useMedicine } from "@/context/MedicinesContext";
 import Swal from "sweetalert2";
 import { motion, AnimatePresence } from "framer-motion";
 
 function ListObat() {
-  const { allMedicines, fetchMedicines, hapusMedicine, getMedicineById } =
-    useMedicine();
+  const { allMedicines, fetchMedicines, getMedicineById } = useMedicine();
   const [selectedMedicineId, setSelectedMedicineId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMedicine, setSelectedMedicine] = useState(null);
@@ -27,8 +26,6 @@ function ListObat() {
       Swal.fire("Error!", "Gagal mengambil detail obat.", "error");
     }
   };
-
- 
 
   const filteredMedicines = allMedicines.filter((medicine) =>
     medicine.nama.toLowerCase().includes(searchTerm.toLowerCase())
@@ -57,7 +54,7 @@ function ListObat() {
               transition={{ duration: 0.3 }}
               className={`border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer ${
                 selectedMedicineId === medicine.id
-                  ? "border-blue-500 ring-2 ring-blue-200"
+                  ? "border-red-500 ring-2 ring-red-200"
                   : "border-gray-200"
               }`}
               onClick={() => handleCardClick(medicine)}
@@ -82,17 +79,9 @@ function ListObat() {
                 <div className="mb-2">
                   <div
                     className={`bg-${
-                      medicine.stok > 5
-                        ? "green"
-                        : medicine.stok > 0
-                        ? "yellow"
-                        : "red"
+                      medicine.stok > 0 ? "green" : "red"
                     }-100 text-${
-                      medicine.stok > 5
-                        ? "green"
-                        : medicine.stok > 0
-                        ? "yellow"
-                        : "red"
+                      medicine.stok > 0 ? "green" : "red"
                     }-800 text-xs px-2 py-1 rounded-full inline-flex items-center`}
                   >
                     <svg
@@ -106,11 +95,7 @@ function ListObat() {
                         clipRule="evenodd"
                       />
                     </svg>
-                    {medicine.stok > 5
-                      ? "AVAILABLE"
-                      : medicine.stok > 0
-                      ? "LOW STOCK"
-                      : "NOT AVAILABLE"}
+                    {medicine.stok > 0 ? "AVAILABLE" : "NOT AVAILABLE"}
                   </div>
                 </div>
                 <h2 className="text-lg font-semibold mb-1 line-clamp-1">
@@ -124,27 +109,36 @@ function ListObat() {
                 </p>
 
                 <div className="flex justify-between items-center mt-4">
-                  <div className="flex items-center text-sm font-medium">
+                  <div className="flex items-center text-sm font-medium gap-1">
                     <svg
                       className="h-5 w-5 mr-1 text-gray-400"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"
-                      />
+                      <Pill />
                     </svg>
-                    <span
-                      className={`text-${
-                        medicine.stok > 0 ? "green" : "red"
-                      }-600`}
+                    <span>{medicine.dosis}</span>
+
+                    <div
+                      className={`flex items-center px-2 py-1 rounded-full ${
+                        medicine.stok === 0
+                          ? "bg-gray-100 text-gray-800"
+                          : medicine.stok <= 5
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
                     >
-                      {medicine.stok} tersisa
-                    </span>
+                      <svg
+                        className="h-5 w-5 mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <Package />
+                      </svg>
+                      <span>{medicine.stok} tersisa</span>
+                    </div>
                   </div>
                 </div>
               </div>

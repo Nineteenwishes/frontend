@@ -64,9 +64,9 @@ export default function TambahObat() {
   };
 
   const removeImage = () => {
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
-      foto: null
+      foto: null,
     }));
     setFotoPreview(null);
     if (fileInputRef.current) {
@@ -90,7 +90,7 @@ export default function TambahObat() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!form.nama || !form.stok) {
       Swal.fire({
         icon: "error",
@@ -102,14 +102,14 @@ export default function TambahObat() {
 
     // Tambahkan konfirmasi SweetAlert sebelum menambahkan obat
     const confirmResult = await Swal.fire({
-      title: 'Konfirmasi Penambahan',
+      title: "Konfirmasi Penambahan",
       text: "Apakah Anda yakin ingin menambahkan obat ini?",
-      icon: 'question',
+      icon: "question",
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Ya, tambahkan!',
-      cancelButtonText: 'Batal'
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Ya, tambahkan!",
+      cancelButtonText: "Batal",
     });
 
     // Jika user membatalkan, hentikan proses
@@ -125,7 +125,7 @@ export default function TambahObat() {
         text: "Data obat berhasil ditambahkan",
         draggable: true,
         showConfirmButton: false,
-        timer: 1500
+        timer: 1500,
       });
       router.push("/staff/daftar-obat");
     } catch (err) {
@@ -198,7 +198,7 @@ export default function TambahObat() {
                     </div>
                     <p className="text-xs text-gray-500 text-center">
                       Seret gambar ke sini atau <br />
-                      <span className="text-blue-500 font-medium">
+                      <span className="text-red-500 font-medium">
                         klik untuk memilih
                       </span>
                     </p>
@@ -220,7 +220,7 @@ export default function TambahObat() {
                   id="nama"
                   value={form.nama}
                   onChange={handleChange}
-                  className="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  className="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
                   placeholder="Masukkan nama obat"
                 />
               </div>
@@ -233,7 +233,7 @@ export default function TambahObat() {
                   id="jenis"
                   value={form.jenis}
                   onChange={handleChange}
-                  className="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  className="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
                   placeholder="Masukkan jenis obat"
                 />
               </div>
@@ -249,7 +249,7 @@ export default function TambahObat() {
                   id="stok"
                   value={form.stok}
                   onChange={handleChange}
-                  className="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  className="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
                   placeholder="Jumlah stok"
                   min="0"
                 />
@@ -263,7 +263,7 @@ export default function TambahObat() {
                   id="dosis"
                   value={form.dosis}
                   onChange={handleChange}
-                  className="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  className="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
                   placeholder="Contoh: 2x sehari"
                 />
               </div>
@@ -277,7 +277,7 @@ export default function TambahObat() {
                 id="deskripsi"
                 value={form.deskripsi}
                 onChange={handleChange}
-                className="w-full border rounded-lg p-2 h-24 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                className="w-full border rounded-lg p-2 h-24 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
                 placeholder="Masukkan deskripsi obat"
               ></textarea>
             </div>
@@ -289,7 +289,7 @@ export default function TambahObat() {
                 </button>
               </Link>
               <button
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg flex items-center hover:bg-blue-700 transition-colors"
+                className="bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded-lg flex items-center hover:bg-gray-50 transition-colors"
                 onClick={handleSubmit}
               >
                 <Check size={16} className="mr-1" /> Konfirmasi

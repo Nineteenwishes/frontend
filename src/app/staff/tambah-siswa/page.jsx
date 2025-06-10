@@ -211,7 +211,7 @@ export default function Page() {
                         name="nis"
                         value={form.nis}
                         onChange={handleNisChange}
-                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                         placeholder="Masukkan NIS siswa"
                         required
                       />
@@ -254,7 +254,7 @@ export default function Page() {
                         value={form.gejala}
                         onChange={handleChange}
                         rows={4}
-                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
                         placeholder="Deskripsikan gejala yang dialami siswa"
                         required
                       />
@@ -269,7 +269,7 @@ export default function Page() {
                           name="medicines_id"
                           value={form.medicines_id}
                           onChange={handleChange}
-                          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent appearance-none bg-white"
                         >
                           <option value="">Pilih obat yang diberikan</option>
                           {allMedicines.map((medicine) => (
@@ -308,7 +308,7 @@ export default function Page() {
                         value={form.keterangan}
                         onChange={handleChange}
                         rows={4}
-                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
                         placeholder="Keterangan tambahan (opsional)"
                       />
                     </div>
@@ -320,7 +320,7 @@ export default function Page() {
                       <div
                         className={`relative border-2 border-dashed rounded-lg p-6 transition-colors ${
                           isDragOver
-                            ? "border-blue-400 bg-blue-50"
+                            ? "border-red-400 bg-red-50"
                             : fotoPreview
                             ? "border-green-300 bg-green-50"
                             : "border-gray-300 bg-gray-50"
@@ -349,7 +349,7 @@ export default function Page() {
                             <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                             <div className="text-sm text-gray-600 mb-2">
                               Drag your image here, or{" "}
-                              <label className="text-blue-600 hover:text-blue-700 cursor-pointer font-medium">
+                              <label className="text-red-600 hover:text-red-700 cursor-pointer font-medium">
                                 click to browse
                                 <input
                                   type="file"

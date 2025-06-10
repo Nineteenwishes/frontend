@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useJadwalPiket } from "@/context/JadwalPiketContext";
+import Swal from "sweetalert2"; // Import SweetAlert2
 
 const JadwalPiket = () => {
   const {
@@ -19,6 +20,7 @@ const JadwalPiket = () => {
     nis: "",
     nama: "",
     kelas: "",
+    hari: "", // Initialize hari with an empty string
   });
   const [alert, setAlert] = useState({
     show: false,
@@ -36,24 +38,50 @@ const JadwalPiket = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      if (editMode) {
-        const result = await updateJadwalPiket(currentId, formData);
-        if (result.success) {
-          showAlert("Jadwal piket berhasil diperbarui", "success");
+
+    // SweetAlert confirmation for add/edit
+    const result = await Swal.fire({
+      title: editMode ? "Konfirmasi Edit" : "Konfirmasi Tambah",
+      text: editMode
+        ? "Apakah Anda yakin ingin menyimpan perubahan ini?"
+        : "Apakah Anda yakin ingin menambahkan jadwal ini?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: editMode ? "Ya, Simpan!" : "Ya, Tambahkan!",
+      cancelButtonText: "Batal",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        if (editMode) {
+          const updateResult = await updateJadwalPiket(currentId, formData);
+          if (updateResult.success) {
+            Swal.fire(
+              "Berhasil!",
+              "Jadwal piket berhasil diperbarui",
+              "success"
+            );
+          }
+        } else {
+          const addResult = await addJadwalPiket(formData);
+          if (addResult.success) {
+            Swal.fire(
+              "Berhasil!",
+              "Jadwal piket berhasil ditambahkan",
+              "success"
+            );
+          }
         }
-      } else {
-        const result = await addJadwalPiket(formData);
-        if (result.success) {
-          showAlert("Jadwal piket berhasil ditambahkan", "success");
-        }
+        closeModal();
+      } catch (err) {
+        Swal.fire(
+          "Error!",
+          err.message || "Terjadi kesalahan saat memproses data",
+          "error"
+        );
       }
-      closeModal();
-    } catch (err) {
-      showAlert(
-        err.message || "Terjadi kesalahan saat memproses data",
-        "error"
-      );
     }
   };
 
@@ -62,6 +90,7 @@ const JadwalPiket = () => {
       nis: item.nis,
       nama: item.nama,
       kelas: item.kelas,
+      hari: item.hari, // Populate hari when editing
     });
     setCurrentId(item.id);
     setEditMode(true);
@@ -69,14 +98,27 @@ const JadwalPiket = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus jadwal ini?")) {
+    // SweetAlert confirmation for delete
+    const result = await Swal.fire({
+      title: "Konfirmasi Hapus",
+      text: "Anda tidak akan dapat mengembalikan ini!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Ya, Hapus!",
+      cancelButtonText: "Batal",
+    });
+
+    if (result.isConfirmed) {
       try {
-        const result = await deleteJadwalPiket(id);
-        if (result.success) {
-          showAlert("Jadwal piket berhasil dihapus", "success");
+        const deleteResult = await deleteJadwalPiket(id);
+        if (deleteResult.success) {
+          Swal.fire("Dihapus!", "Jadwal piket berhasil dihapus.", "success");
         }
       } catch (err) {
-        showAlert(
+        Swal.fire(
+          "Error!",
           err.message || "Terjadi kesalahan saat menghapus data",
           "error"
         );
@@ -96,18 +138,8 @@ const JadwalPiket = () => {
       nis: "",
       nama: "",
       kelas: "",
+      hari: "", // Clear hari with an empty string when closing modal
     });
-  };
-
-  const showAlert = (message, type) => {
-    setAlert({
-      show: true,
-      message,
-      type,
-    });
-    setTimeout(() => {
-      setAlert({ ...alert, show: false });
-    }, 3000);
   };
 
   return (
@@ -122,67 +154,6 @@ const JadwalPiket = () => {
             Kelola jadwal piket siswa dengan mudah
           </p>
         </div>
-
-        {/* Alert Notification */}
-        {alert.show && (
-          <div
-            className={`mb-4 md:mb-6 p-3 md:p-4 rounded-lg shadow ${
-              alert.type === "success"
-                ? "bg-green-100 border-l-4 border-green-500 text-green-700"
-                : "bg-red-100 border-l-4 border-red-500 text-red-600"
-            }`}
-          >
-            <div className="flex items-center">
-              <svg
-                className="w-5 h-5 md:w-6 md:h-6 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                {alert.type === "success" ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                )}
-              </svg>
-              <span className="text-sm md:text-base">{alert.message}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-4 md:mb-6 p-3 md:p-4 bg-red-100 border-l-4 border-red-500 text-red-600 rounded-lg shadow">
-            <div className="flex items-center">
-              <svg
-                className="w-5 h-5 md:w-6 md:h-6 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <span className="text-sm md:text-base">{error}</span>
-            </div>
-          </div>
-        )}
 
         {/* Add Button */}
         <div className="flex justify-end mb-4 md:mb-6">
@@ -230,6 +201,9 @@ const JadwalPiket = () => {
                     <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wider">
                       Kelas
                     </th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      Hari
+                    </th>
                     <th className="px-6 py-3 text-right text-sm font-semibold text-white uppercase tracking-wider">
                       Aksi
                     </th>
@@ -250,6 +224,9 @@ const JadwalPiket = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                           {item.kelas}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {item.hari}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex justify-end space-x-3">
@@ -300,7 +277,7 @@ const JadwalPiket = () => {
                   ) : (
                     <tr>
                       <td
-                        colSpan="4"
+                        colSpan="5" // Update colspan to 5
                         className="px-6 py-12 text-center text-gray-500"
                       >
                         <div className="flex flex-col items-center">
@@ -318,9 +295,7 @@ const JadwalPiket = () => {
                               d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
                             />
                           </svg>
-                          <p className="text-lg">
-                            Tidak ada data jadwal piket
-                          </p>
+                          <p className="text-lg">Tidak ada data jadwal piket</p>
                           <p className="text-sm mt-2 text-center">
                             Klik tombol "Tambah Jadwal Piket" untuk menambahkan
                             data baru
@@ -338,9 +313,14 @@ const JadwalPiket = () => {
               {jadwalPiket.length > 0 ? (
                 <div className="divide-y divide-gray-200">
                   {jadwalPiket.map((item) => (
-                    <div key={item.id} className="p-4 hover:bg-red-50 transition-colors">
+                    <div
+                      key={item.id}
+                      className="p-4 hover:bg-red-50 transition-colors"
+                    >
                       <div className="flex justify-between items-start mb-2">
-                        <div className="font-medium text-gray-900">{item.nama}</div>
+                        <div className="font-medium text-gray-900">
+                          {item.nama}
+                        </div>
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleEdit(item)}
@@ -384,8 +364,15 @@ const JadwalPiket = () => {
                           </button>
                         </div>
                       </div>
-                      <div className="text-sm text-gray-500 mb-1">NIS: {item.nis}</div>
-                      <div className="text-sm text-gray-500">Kelas: {item.kelas}</div>
+                      <div className="text-sm text-gray-500 mb-1">
+                        NIS: {item.nis}
+                      </div>
+                      <div className="text-sm text-gray-500 mb-1">
+                        Kelas: {item.kelas}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Hari: {item.hari}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -406,12 +393,10 @@ const JadwalPiket = () => {
                         d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
                       />
                     </svg>
-                    <p className="text-base">
-                      Tidak ada data jadwal piket
-                    </p>
+                    <p className="text-base">Tidak ada data jadwal piket</p>
                     <p className="text-xs mt-1 text-center">
-                      Klik tombol "Tambah Jadwal Piket" untuk menambahkan
-                      data baru
+                      Klik tombol "Tambah Jadwal Piket" untuk menambahkan data
+                      baru
                     </p>
                   </div>
                 </div>
@@ -480,6 +465,31 @@ const JadwalPiket = () => {
                     className="w-full px-3 py-2 md:px-4 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none text-sm md:text-base"
                     required
                   />
+                </div>
+                <div className="mb-4 md:mb-6">
+                  <label
+                    className="block text-gray-700 mb-1 md:mb-2 text-sm md:font-medium"
+                    htmlFor="hari"
+                  >
+                    Hari
+                  </label>
+                  <select
+                    id="hari"
+                    name="hari"
+                    value={formData.hari} // Ensure value is not null
+                    onChange={handleChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                    required
+                  >
+                    <option value="">Pilih Hari</option>
+                    <option value="Senin">Senin</option>
+                    <option value="Selasa">Selasa</option>
+                    <option value="Rabu">Rabu</option>
+                    <option value="Kamis">Kamis</option>
+                    <option value="Jumat">Jumat</option>
+                    <option value="Sabtu">Sabtu</option>
+                    <option value="Minggu">Minggu</option>
+                  </select>
                 </div>
                 <div className="flex justify-end space-x-2 md:space-x-3">
                   <button

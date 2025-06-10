@@ -3,6 +3,7 @@ import { Search, Download, Info, ArrowLeft, ChevronDown } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useEffect, useState } from "react";
 import { useRiwayatKunjunganUks } from "@/context/RiwayatKunjunganUksContext";
+import { useMedicine } from "@/context/MedicinesContext";
 import { motion, AnimatePresence } from "framer-motion";
 import Swal from "sweetalert2";
 
@@ -20,7 +21,6 @@ export default function RiwayatKunjungan() {
     getAllRiwayat();
   }, []);
 
-  // Function to get current month name in Indonesian
   const getCurrentMonthName = () => {
     const months = [
       'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -30,7 +30,6 @@ export default function RiwayatKunjungan() {
     return months[currentMonth];
   };
 
-  // Function to get weeks for current month with date ranges
   const getWeeksInMonth = () => {
     const currentMonth = getCurrentMonthName();
     const weekRanges = getWeekRanges();
@@ -44,13 +43,11 @@ export default function RiwayatKunjungan() {
     return weeks;
   };
 
-  // Function to get date ranges for each week in current month
   const getWeekRanges = () => {
     const currentDate = new Date();
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     
-    // Get first day of month and last day of month
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     
@@ -62,7 +59,6 @@ export default function RiwayatKunjungan() {
       let weekEnd;
       
       if (week === 4) {
-        // Week 4 includes all remaining days of the month
         weekEnd = lastDay.getDate();
       } else {
         weekEnd = Math.min(currentWeekStart + 6, lastDay.getDate());
@@ -76,14 +72,12 @@ export default function RiwayatKunjungan() {
       
       currentWeekStart = weekEnd + 1;
       
-      // If we've covered all days in month, break
       if (weekEnd >= lastDay.getDate()) break;
     }
     
     return weeks;
   };
 
-  // Function to get week number from date
   const getWeekOfMonth = (dateString) => {
     const date = new Date(dateString);
     const dayOfMonth = date.getDate();
@@ -95,10 +89,9 @@ export default function RiwayatKunjungan() {
       }
     }
     
-    return 4; // Default to week 4 if not found
+    return 4;
   };
 
-  // Function to filter data by selected week
   const filterByWeek = (data) => {
     if (selectedWeek === 'Semua Data') {
       return data;
@@ -157,6 +150,30 @@ export default function RiwayatKunjungan() {
   };
 
   const InfoCardModal = () => {
+    const { getMedicineById, fetchMedicines } = useMedicine();
+    const [medicineName, setMedicineName] = useState("-");
+
+    useEffect(() => {
+      fetchMedicines();
+    }, []);
+
+    useEffect(() => {
+      const fetchMedicine = async () => {
+        if (visitData?.obat) {
+          try {
+            const medicine = await getMedicineById(visitData.obat);
+            setMedicineName(medicine?.nama || "-");
+          } catch (error) {
+            console.error("Error fetching medicine details:", error);
+            setMedicineName("-");
+          }
+        } else {
+          setMedicineName("-");
+        }
+      };
+      fetchMedicine();
+    }, [visitData?.obat]);
+
     if (!visitData) {
       return (
         <div className="fixed inset-0 flex items-center justify-center z-50">
@@ -290,11 +307,11 @@ export default function RiwayatKunjungan() {
 
             <div>
               <label className="block text-sm text-gray-600 mb-1">Obat</label>
-              <textarea
-                rows={2}
-                value={visitData.obat || ""}
+              <input
+                type="text"
+                value={medicineName}
                 readOnly
-                className="w-full p-2.5 border border-gray-300 rounded-lg text-sm resize-none bg-gray-100"
+                className="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-100"
               />
             </div>
 
@@ -342,7 +359,6 @@ export default function RiwayatKunjungan() {
               />
             </div>
 
-            {/* Week Filter Dropdown */}
             <div className="relative">
               <button
                 onClick={() => setShowWeekDropdown(!showWeekDropdown)}
@@ -354,7 +370,6 @@ export default function RiwayatKunjungan() {
                 </span>
               </button>
 
-              {/* Dropdown Menu */}
               <AnimatePresence>
                 {showWeekDropdown && (
                   <motion.div
@@ -371,7 +386,7 @@ export default function RiwayatKunjungan() {
                           onClick={() => handleWeekSelect(week)}
                           className={`w-full text-left px-4 py-2 text-sm transition-colors ${
                             selectedWeek === week 
-                              ? 'bg-blue-50 text-blue-700 font-medium' 
+                              ? 'bg-red-50 text-red-700 font-medium' 
                               : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                           }`}
                         >
@@ -383,7 +398,6 @@ export default function RiwayatKunjungan() {
                 )}
               </AnimatePresence>
 
-              {/* Overlay to close dropdown when clicking outside */}
               {showWeekDropdown && (
                 <div
                   className="fixed inset-0 z-40"
@@ -409,7 +423,7 @@ export default function RiwayatKunjungan() {
                     Gejala
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    Tanggal
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Masuk
@@ -470,15 +484,7 @@ export default function RiwayatKunjungan() {
                         {visit.gejala || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span
-                          className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            visit.status.toLowerCase() === "masuk uks"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {visit.status}
-                        </span>
+                        {visit.tanggal || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {visit.jam_masuk || "-"}

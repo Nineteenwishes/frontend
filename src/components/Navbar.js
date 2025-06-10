@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Activity, X } from "lucide-react";
+import { Activity, X, User, ChevronDown } from "lucide-react";
 import { useAuth } from '@/context/AuthContext';
 import Image from "next/image";
 
@@ -103,8 +103,12 @@ function Navbar() {
                 className="flex items-center space-x-2 focus:outline-none"
                 onClick={() => document.getElementById("userDropdown").classList.toggle("hidden")}
               >
-                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#ef4444] font-bold cursor-pointer">
-                  DS
+                <div className="flex items-center space-x-2">
+                  <User className="w-6 h-6" />
+                  <span className="text-sm font-medium text-gray-700">
+                    {user?.role === "staff" ? "Petugas Uks" : "Guru"}
+                  </span>
+                  <ChevronDown className="w-4 h-4 text-gray-700" />
                 </div>
               </button>
               <div

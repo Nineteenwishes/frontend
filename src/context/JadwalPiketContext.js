@@ -1,12 +1,12 @@
 "use client";
 import React, { createContext, useState, useEffect, useContext } from "react";
-import axios from "@/utils/axios"; // Menggunakan instance axios dari utils
+import axios from "@/utils/axios";
 
 const JadwalPiketContext = createContext();
 
 export const JadwalPiketProvider = ({ children }) => {
   const [jadwalPiket, setJadwalPiket] = useState([]);
-  const [petugasTerpilih, setPetugasTerpilih] = useState(null); 
+  const [petugasTerpilih, setPetugasTerpilih] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -42,6 +42,34 @@ export const JadwalPiketProvider = ({ children }) => {
     }
   };
 
+  const getJadwalPiketByHari = async (hari) => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`/jadwal-piket/hari/${hari}`);
+      setJadwalPiket(response.data.data);
+      setError(null);
+      return {
+        success: true,
+        status: "success",
+        data: response.data.data,
+      };
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Terjadi kesalahan saat mengambil data jadwal piket berdasarkan hari."
+      );
+      return {
+        success: false,
+        status: "error",
+        message:
+          err.response?.data?.message ||
+          "Terjadi kesalahan saat mengambil data jadwal piket berdasarkan hari.",
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const addJadwalPiket = async (data) => {
     setLoading(true);
     try {
@@ -56,7 +84,6 @@ export const JadwalPiketProvider = ({ children }) => {
         data: newJadwal,
       };
     } catch (err) {
-      // Handle specific errors like 422 if needed, based on backend response structure
       const errorMessage =
         err.response?.data?.message ||
         err.message ||
@@ -133,7 +160,7 @@ export const JadwalPiketProvider = ({ children }) => {
   const getJadwalPiketById = async (id) => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/${id}`);
+      const response = await axios.get(`/jadwal-piket/${id}`);
       setError(null);
       return {
         success: true,
@@ -163,6 +190,7 @@ export const JadwalPiketProvider = ({ children }) => {
         petugasTerpilih,
         setPetugasTerpilih,
         fetchJadwalPiket,
+        getJadwalPiketByHari,
         addJadwalPiket,
         updateJadwalPiket,
         deleteJadwalPiket,

@@ -204,6 +204,11 @@ export default function Login() {
             </button>
 
             {/* Additional Links */}
+            <div className="text-center text-sm">
+              <a href="/reset-password" className="text-red-600 hover:underline">
+                Lupa Kata Sandi?
+              </a>
+            </div>
           </div>
         </div>
 

@@ -1,9 +1,7 @@
 "use client";
 import {
-  Search,
   LogOut,
   Info,
-  Plus,
   Edit,
   Undo2,
   Download,
