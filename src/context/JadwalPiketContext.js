@@ -9,6 +9,7 @@ export const JadwalPiketProvider = ({ children }) => {
   const [petugasTerpilih, setPetugasTerpilih] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [cachedJadwalPiketByHari, setCachedJadwalPiketByHari] = useState({}); // New state for caching
 
   useEffect(() => {
     fetchJadwalPiket();
@@ -43,15 +44,35 @@ export const JadwalPiketProvider = ({ children }) => {
   };
 
   const getJadwalPiketByHari = async (hari) => {
+    if (!hari) {
+      return {
+        success: false,
+        status: "error",
+        message: "Hari tidak boleh kosong.",
+      };
+    }
+
+    // Check if data is already cached
+    if (cachedJadwalPiketByHari[hari]) {
+      setJadwalPiket(cachedJadwalPiketByHari[hari]); // Update current jadwalPiket state
+      return {
+        success: true,
+        status: "success",
+        data: cachedJadwalPiketByHari[hari],
+      };
+    }
+
     setLoading(true);
     try {
       const response = await axios.get(`/jadwal-piket/hari/${hari}`);
-      setJadwalPiket(response.data.data);
+      const data = response.data.data;
+      setJadwalPiket(data);
+      setCachedJadwalPiketByHari((prev) => ({ ...prev, [hari]: data })); // Cache the data
       setError(null);
       return {
         success: true,
         status: "success",
-        data: response.data.data,
+        data: data,
       };
     } catch (err) {
       setError(

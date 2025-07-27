@@ -12,7 +12,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useKunjunganUks } from "@/context/KunjunganUksContext";
-import { useMedicine } from "@/context/MedicinesContext"; // Import useMedicine
+import { useMedicine } from "@/context/MedicinesContext";
 import { motion, AnimatePresence } from "framer-motion";
 import Swal from "sweetalert2";
 
@@ -95,7 +95,6 @@ export default function DaftarSiswa() {
     setVisitData(null);
   };
 
-  // Filter kunjunganList based on search term (nama or kelas)
   const filteredKunjunganList = kunjunganList.filter((visit) => {
     const searchLower = searchTerm.toLowerCase();
     return (
@@ -104,12 +103,14 @@ export default function DaftarSiswa() {
     );
   });
 
+  // --- MODAL INFO CARD ---
+  // Perubahan desain ada di dalam komponen ini
   const InfoCardModal = () => {
-    const { getMedicineById, fetchMedicines } = useMedicine(); // Use useMedicine hook
+    const { getMedicineById, fetchMedicines } = useMedicine();
     const [medicineName, setMedicineName] = useState("-");
 
     useEffect(() => {
-      fetchMedicines(); // Fetch medicines when component mounts
+      fetchMedicines();
     }, []);
 
     useEffect(() => {
@@ -127,7 +128,7 @@ export default function DaftarSiswa() {
         }
       };
       fetchMedicine();
-    }, [visitData?.obat, fetchMedicines]); // Add fetchMedicines to dependency array
+    }, [visitData?.obat, fetchMedicines]);
 
     if (!visitData) {
       return (
@@ -152,10 +153,10 @@ export default function DaftarSiswa() {
         animate={{ x: 0 }}
         exit={{ x: "100%" }}
         transition={{ type: "spring", damping: 25 }}
-        className="fixed inset-y-0 right-0 w-full max-w-md z-50"
+        // CHANGE: Modal dibuat full-width di mobile, dan max-w-md di layar lebih besar
+        className="fixed inset-y-0 right-0 w-full sm:max-w-md z-50"
       >
         <div className="h-full bg-white shadow-xl overflow-y-auto">
-          {/* Close button */}
           <button
             onClick={handleCloseModal}
             className="absolute top-4 left-4 bg-white rounded-full p-2 shadow-md z-10 hover:bg-gray-100 transition-colors"
@@ -163,9 +164,7 @@ export default function DaftarSiswa() {
             <Undo2 size={20} className="text-gray-700" />
           </button>
 
-          {/* Header with Image */}
           <div className="relative">
-            {/* Hero Image */}
             <div className="h-48">
               {visitData.foto ? (
                 <img
@@ -179,8 +178,6 @@ export default function DaftarSiswa() {
                 </div>
               )}
             </div>
-
-            {/* Action buttons */}
             <div className="absolute bottom-4 right-4 flex gap-2">
               <button className="bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-colors">
                 <Download size={20} className="text-gray-700" />
@@ -191,16 +188,11 @@ export default function DaftarSiswa() {
             </div>
           </div>
 
-          {/* Form Content */}
           <div className="p-5 space-y-5">
-            {/* NIS and Time Selection - Combined in one row */}
-            <div className="grid grid-cols-3 gap-4">
-              {/* NIS */}
-              <div className="col-span-2">
-                <label
-                  htmlFor="nis"
-                  className="block text-sm text-gray-600 mb-1"
-                >
+            {/* CHANGE: Grid dibuat responsif, menjadi 1 kolom di mobile */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="sm:col-span-2">
+                <label htmlFor="nis" className="block text-sm text-gray-600 mb-1">
                   NIS
                 </label>
                 <input
@@ -211,10 +203,8 @@ export default function DaftarSiswa() {
                   className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-100"
                 />
               </div>
-
-              {/* Time Selection */}
               <div className="flex flex-col">
-                <label className="block text-sm text-gray-600 mb-1 invisible">
+                <label className="block text-sm text-gray-600 mb-1">
                   Waktu
                 </label>
                 <div className="flex gap-2 h-full items-end">
@@ -228,13 +218,10 @@ export default function DaftarSiswa() {
               </div>
             </div>
 
-            {/* Name & Class */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* CHANGE: Grid dibuat responsif */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm text-gray-600 mb-1"
-                >
+                <label htmlFor="name" className="block text-sm text-gray-600 mb-1">
                   Nama
                 </label>
                 <input
@@ -246,10 +233,7 @@ export default function DaftarSiswa() {
                 />
               </div>
               <div>
-                <label
-                  htmlFor="class"
-                  className="block text-sm text-gray-600 mb-1"
-                >
+                <label htmlFor="class" className="block text-sm text-gray-600 mb-1">
                   Kelas
                 </label>
                 <input
@@ -262,13 +246,10 @@ export default function DaftarSiswa() {
               </div>
             </div>
 
-            {/* Symptoms & Notes */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* CHANGE: Grid dibuat responsif */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label
-                  htmlFor="symptoms"
-                  className="block text-sm text-gray-600 mb-1"
-                >
+                <label htmlFor="symptoms" className="block text-sm text-gray-600 mb-1">
                   Gejala
                 </label>
                 <textarea
@@ -276,14 +257,11 @@ export default function DaftarSiswa() {
                   rows={4}
                   value={visitData.gejala || ""}
                   readOnly
-                  className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 resize-none bg-gray-100"
+                  className="w-full p-2.5 border border-gray-300 rounded-lg text-sm resize-none bg-gray-100"
                 />
               </div>
               <div>
-                <label
-                  htmlFor="notes"
-                  className="block text-sm text-gray-600 mb-1"
-                >
+                <label htmlFor="notes" className="block text-sm text-gray-600 mb-1">
                   Keterangan
                 </label>
                 <textarea
@@ -291,17 +269,13 @@ export default function DaftarSiswa() {
                   rows={4}
                   value={visitData.keterangan || ""}
                   readOnly
-                  className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 resize-none bg-gray-100"
+                  className="w-full p-2.5 border border-gray-300 rounded-lg text-sm resize-none bg-gray-100"
                 />
               </div>
             </div>
 
-            {/* Obat yang Diberikan */}
             <div>
-              <label
-                htmlFor="medicine"
-                className="block text-sm text-gray-600 mb-1"
-              >
+              <label htmlFor="medicine" className="block text-sm text-gray-600 mb-1">
                 Obat yang Diberikan
               </label>
               <input
@@ -309,7 +283,7 @@ export default function DaftarSiswa() {
                 id="medicine"
                 value={medicineName}
                 readOnly
-                className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-100"
+                className="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-100"
               />
             </div>
           </div>
@@ -325,14 +299,13 @@ export default function DaftarSiswa() {
       transition={{ duration: 0.5, ease: "easeOut" }}
       className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative"
     >
-      {/* Modal Info Card */}
       <AnimatePresence>{showInfoModal && <InfoCardModal />}</AnimatePresence>
 
-      {/* Konten utama daftar siswa */}
-      <div className="flex justify-between items-center mb-6">
+      {/* CHANGE: Header dibuat responsif. Menjadi kolom di mobile, dan baris di tablet ke atas. */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
         <h1 className="text-xl font-semibold">Daftar Siswa Sakit</h1>
-        <div className="flex items-center space-x-2">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+          <div className="relative w-full sm:w-auto">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search size={16} className="text-gray-400" />
             </div>
@@ -344,9 +317,8 @@ export default function DaftarSiswa() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-
-          <Link href={"/staff/tambah-siswa"}>
-            <button className="bg-white text-black border-2 border-solid border-black hover:border-black px-4 py-2 rounded-lg flex items-center text-sm transition-all duration-300 ease-in-out shadow-sm hover:shadow-md">
+          <Link href={"/staff/tambah-siswa"} className="w-full sm:w-auto">
+            <button className="bg-white text-black border-2 border-solid border-black hover:border-black px-4 py-2 rounded-lg flex items-center justify-center text-sm transition-all duration-300 ease-in-out shadow-sm hover:shadow-md w-full">
               <span className="flex items-center gap-2">
                 <Plus className="h-5 w-5" />
                 Tambah Siswa
@@ -356,29 +328,19 @@ export default function DaftarSiswa() {
         </div>
       </div>
 
+      {/* --- KONTEN UTAMA --- */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-        <div className="overflow-x-auto">
+        {/* CHANGE: Tampilan Tabel (Hanya untuk tablet dan desktop) */}
+        <div className="overflow-x-auto hidden md:block">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nama
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Kelas
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Masuk
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Keluar
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Aksi
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelas</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Masuk</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keluar</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -389,59 +351,28 @@ export default function DaftarSiswa() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
-                    className={`hover:bg-gray-50 transition-colors ${
-                      visit.status.toLowerCase() === "masuk uks" ? "bg-white" : ""
-                    }`}
+                    className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {visit.nama || "-"}
-                      </div>
+                      <div className="text-sm font-medium text-gray-900">{visit.nama || "-"}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {visit.kelas || "-"}
-                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{visit.kelas || "-"}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          visit.status.toLowerCase() === "masuk uks"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
+                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${visit.status.toLowerCase() === "masuk uks" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
                         {visit.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {visit.jam_masuk || "-"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {visit.jam_keluar || "-"}
-                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{visit.jam_masuk || "-"}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{visit.jam_keluar || "-"}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
-                        <button
-                          className="text-black hover:text-slate-700"
-                          onClick={() => handleInfoClick(visit.id)}
-                        >
+                        <button className="text-black hover:text-slate-700 p-1" onClick={() => handleInfoClick(visit.id)}>
                           <Info className="h-5 w-5" />
                         </button>
-
-                        <button
-                          onClick={() => handleMarkOut(visit.id)}
-                          className={`${
-                            visit.status.toLowerCase() === "keluar uks"
-                              ? "text-gray-400 cursor-not-allowed"
-                              : "text-red-600 hover:text-red-900"
-                          }`}
-                          disabled={visit.status.toLowerCase() === "keluar uks"}
-                        >
+                        <button onClick={() => handleMarkOut(visit.id)} className={`p-1 ${visit.status.toLowerCase() === "keluar uks" ? "text-gray-400 cursor-not-allowed" : "text-red-600 hover:text-red-900"}`} disabled={visit.status.toLowerCase() === "keluar uks"}>
                           <LogOut className="h-5 w-5" />
                         </button>
-                        <Link
-                          href={`/staff/edit-siswa?id=${visit.id}`}
-                          className="text-black hover:text-slate-700"
-                        >
+                        <Link href={`/staff/edit-siswa?id=${visit.id}`} className="text-black hover:text-slate-700 p-1">
                           <Edit className="h-5 w-5" />
                         </Link>
                       </div>
@@ -457,6 +388,59 @@ export default function DaftarSiswa() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* CHANGE: Tampilan Kartu (Hanya untuk mobile) */}
+        <div className="md:hidden p-4 space-y-4 bg-gray-50">
+          {filteredKunjunganList.length > 0 ? (
+            filteredKunjunganList.map((visit, index) => (
+              <motion.div
+                key={visit.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 space-y-3"
+              >
+                {/* Bagian Atas: Nama, Kelas, Status */}
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="font-bold text-gray-900">{visit.nama || "-"}</div>
+                    <div className="text-sm text-gray-500">{visit.kelas || "-"}</div>
+                  </div>
+                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${visit.status.toLowerCase() === "masuk uks" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                    {visit.status}
+                  </span>
+                </div>
+
+                {/* Bagian Tengah: Waktu */}
+                <div className="border-t border-gray-200 pt-3 flex justify-between text-sm">
+                  <div className="text-gray-500">
+                    Masuk: <span className="font-medium text-gray-700">{visit.jam_masuk || "-"}</span>
+                  </div>
+                  <div className="text-gray-500">
+                    Keluar: <span className="font-medium text-gray-700">{visit.jam_keluar || "-"}</span>
+                  </div>
+                </div>
+
+                {/* Bagian Bawah: Aksi */}
+                <div className="border-t border-gray-200 pt-3 flex justify-end space-x-3">
+                  <button className="text-black hover:text-slate-700 p-2 rounded-full hover:bg-gray-100" onClick={() => handleInfoClick(visit.id)}>
+                    <Info className="h-5 w-5" />
+                  </button>
+                  <button onClick={() => handleMarkOut(visit.id)} className={`p-2 rounded-full ${visit.status.toLowerCase() === "keluar uks" ? "text-gray-400 cursor-not-allowed" : "text-red-600 hover:text-red-900 hover:bg-red-50"}`} disabled={visit.status.toLowerCase() === "keluar uks"}>
+                    <LogOut className="h-5 w-5" />
+                  </button>
+                  <Link href={`/staff/edit-siswa?id=${visit.id}`} className="text-black hover:text-slate-700 p-2 rounded-full hover:bg-gray-100">
+                    <Edit className="h-5 w-5" />
+                  </Link>
+                </div>
+              </motion.div>
+            ))
+          ) : (
+            <div className="px-6 py-10 text-center text-sm text-gray-500">
+              {searchTerm ? "Tidak ditemukan data yang sesuai" : "Tidak ada data"}
+            </div>
+          )}
         </div>
       </div>
     </motion.div>

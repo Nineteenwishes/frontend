@@ -1,178 +1,174 @@
-"use client"
-import React, { useState } from 'react';
-import { 
-  Activity, 
-  User, 
-  Calendar, 
-  FileText, 
-  Settings, 
-  Bell, 
-  Search, 
-  Users, 
-  Heart, 
-  TrendingUp, 
-  BarChart2, 
-  Clipboard
-} from 'lucide-react';
+"use client";
+import React, { useEffect, useState } from "react";
+import { useKunjunganUks } from "@/context/KunjunganUksContext";
+import { useMedicine } from "@/context/MedicinesContext";
+import { useRiwayatKunjunganUks } from "@/context/RiwayatKunjunganUksContext";
+import { motion } from "framer-motion";
+import { Pill, Stethoscope, History } from "lucide-react";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
-function Dashboard() {
-  const [activePage, setActivePage] = useState('dashboard');
+// Komponen Kartu Statistik (tidak ada perubahan di sini)
+const StatCard = ({ icon, title, value, color, gradientFrom, gradientTo }) => {
+  const IconComponent = icon;
+  return (
+    <motion.div
+      whileHover={{ y: -5, scale: 1.03 }}
+      className={`relative overflow-hidden rounded-xl shadow-lg p-6 bg-gradient-to-br ${gradientFrom} ${gradientTo} border border-gray-100`}
+    >
+      <div className="flex justify-between items-start">
+        <div className="flex flex-col">
+          <p className={`text-sm font-medium ${color}-700`}>{title}</p>
+          <p className="text-4xl font-bold text-gray-800 mt-2">{value}</p>
+        </div>
+        <div className={`p-3 rounded-full bg-white/50`}>
+          <IconComponent className={`w-7 h-7 ${color}-600`} />
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: <Activity size={18} /> },
-    { id: 'patients', label: 'Pasien', icon: <Users size={18} /> },
-    { id: 'appointments', label: 'Janji Medis', icon: <Calendar size={18} /> },
-    { id: 'health-records', label: 'Rekam Medis', icon: <FileText size={18} /> },
-    { id: 'analytics', label: 'Analitik', icon: <BarChart2 size={18} /> },
-    { id: 'settings', label: 'Pengaturan', icon: <Settings size={18} /> },
-  ];
+// Custom Tooltip untuk Recharts (tidak ada perubahan di sini)
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="p-3 bg-white/80 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200">
+        <p className="label font-bold text-gray-800">{`${label}`}</p>
+        <p className="intro text-sm text-gray-600">{`${payload[0].name} : ${payload[0].value}`}</p>
+      </div>
+    );
+  }
+  return null;
+};
 
-  const dashboardStats = [
-    { label: 'Total Pasien', value: '1,248', icon: <Users size={24} />, color: 'bg-blue-500' },
-    { label: 'Janji Hari Ini', value: '42', icon: <Calendar size={24} />, color: 'bg-teal-500' },
-    { label: 'Penilaian Pasien', value: '4.8/5', icon: <Heart size={24} />, color: 'bg-rose-500' },
-    { label: 'Pendapatan Bulan Ini', value: 'Rp 86,4jt', icon: <TrendingUp size={24} />, color: 'bg-emerald-500' },
-  ];
 
-  const patientAppointments = [
-    { name: 'Andi Susanto', time: '09:00', type: 'Pemeriksaan Rutin', doctor: 'dr. Maya Putri', status: 'Selesai' },
-    { name: 'Dewi Lestari', time: '10:30', type: 'Konsultasi', doctor: 'dr. Budi Santoso', status: 'Sedang Berlangsung' },
-    { name: 'Rudi Hermawan', time: '13:00', type: 'Tes Laboratorium', doctor: 'dr. Siti Aminah', status: 'Menunggu' },
-    { name: 'Fitriani Sari', time: '14:15', type: 'Vaksinasi', doctor: 'dr. Maya Putri', status: 'Menunggu' },
-    { name: 'Bagus Prakoso', time: '15:45', type: 'Pemeriksaan Gigi', doctor: 'drg. Ahmad Fajar', status: 'Menunggu' },
-  ];
+export default function Dashboard() {
+  const { kunjunganList, getAllKunjungan } = useKunjunganUks();
+  const { allMedicines, fetchMedicines } = useMedicine();
+  const { riwayatList, getAllRiwayat } = useRiwayatKunjunganUks();
+
+  const [yearlyVisitsData, setYearlyVisitsData] = useState([]);
+  const [medicineStockData, setMedicineStockData] = useState([]);
+
+  useEffect(() => {
+    getAllKunjungan();
+    fetchMedicines();
+    getAllRiwayat();
+  }, []);
+
+  useEffect(() => {
+    if (riwayatList.length > 0) {
+      const currentYear = new Date().getFullYear();
+      const monthlyVisits = Array(12).fill(0);
+
+      riwayatList.forEach(visit => {
+        const visitDate = new Date(visit.tanggal);
+        if (visitDate.getFullYear() === currentYear) {
+          monthlyVisits[visitDate.getMonth()]++;
+        }
+      });
+
+      const chartData = monthlyVisits.map((visits, index) => ({
+        month: ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][index],
+        "Jumlah Kunjungan": visits,
+      }));
+      setYearlyVisitsData(chartData);
+    }
+
+    if (allMedicines.length > 0) {
+      const sortedMedicines = [...allMedicines].sort((a, b) => b.stok - a.stok).slice(0, 10);
+      const stockData = sortedMedicines.map(medicine => ({
+        name: medicine.nama.length > 10 ? `${medicine.nama.substring(0, 10)}...` : medicine.nama,
+        "Stok Tersedia": medicine.stok,
+      }));
+      setMedicineStockData(stockData);
+    }
+  }, [riwayatList, allMedicines]);
+  
+  const totalKunjungan = kunjunganList.length;
+  const totalMedicines = allMedicines.length;
+  const totalRiwayat = riwayatList.length;
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
-      {/* Header */}
-        <main className="flex-1 p-6">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-700">Dashboard</h2>
-            <p className="text-gray-500">Selamat datang kembali, dr. Rini!</p>
-          </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="bg-slate-50 min-h-screen p-4 sm:p-6 lg:p-8"
+    >
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-10">
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard Admin</h1>
+          <p className="text-gray-500 mt-1">Selamat datang kembali! Berikut adalah ringkasan aktivitas UKS.</p>
+        </div>
 
-          {/* Search Bar */}
-          <div className="mb-6 relative">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Cari pasien, dokter, atau layanan..."
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              />
-              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-500" />
-            </div>
-          </div>
+        {/* Grid diubah menjadi 3 kolom untuk desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <StatCard icon={Stethoscope} title="Kunjungan Masuk Hari Ini" value={totalKunjungan} color="text-red" gradientFrom="from-red-100" gradientTo="to-red-50" />
+          <StatCard icon={Pill} title="Total Jenis Obat" value={totalMedicines} color="text-rose" gradientFrom="from-rose-100" gradientTo="to-rose-50" />
+          <StatCard icon={History} title="Total Riwayat Kunjungan" value={totalRiwayat} color="text-pink" gradientFrom="from-pink-100" gradientTo="to-pink-50" />
+        </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            {dashboardStats.map((stat, index) => (
-              <div key={index} className="bg-white rounded-lg shadow p-6 flex items-center space-x-4">
-                <div className={`${stat.color} text-white p-3 rounded-lg`}>
-                  {stat.icon}
-                </div>
-                <div>
-                  <p className="text-gray-500 text-sm">{stat.label}</p>
-                  <p className="text-gray-700 text-xl font-bold">{stat.value}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          {/* Chart Kunjungan Tahunan */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 lg:col-span-3"
+          >
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Grafik Kunjungan UKS ({new Date().getFullYear()})</h2>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={yearlyVisitsData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                  <defs>
+                    {/* Gradien diubah ke tema merah */}
+                    <linearGradient id="colorVisits" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#F87171" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#FCA5A5" stopOpacity={0.7}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                  <XAxis dataKey="month" stroke="#A0AEC0" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#A0AEC0" fontSize={12} tickLine={false} axisLine={false} />
+                  {/* Warna kursor hover diubah ke merah transparan */}
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(254, 226, 226, 0.6)' }} />
+                  <Bar dataKey="Jumlah Kunjungan" fill="url(#colorVisits)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
 
-          {/* Appointments Section */}
-          <div className="bg-white rounded-lg shadow mb-6">
-            <div className="border-b border-gray-300 p-4 flex justify-between items-center">
-              <h3 className="font-semibold text-gray-700">Janji Medis Hari Ini</h3>
-              <button className="text-teal-500 hover:text-teal-600 text-sm font-medium">
-                Lihat Semua
-              </button>
+          {/* Chart Stok Obat */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 lg:col-span-2"
+          >
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Stok Obat (Top 10)</h2>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={medicineStockData} layout="vertical" margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
+                   <defs>
+                    {/* Gradien diubah ke tema merah/rose */}
+                    <linearGradient id="colorStock" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="5%" stopColor="#DC2626" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#F472B6" stopOpacity={0.9}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" />
+                  <XAxis type="number" stroke="#A0AEC0" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis type="category" dataKey="name" stroke="#A0AEC0" fontSize={12} tickLine={false} axisLine={false} width={80} />
+                  {/* Warna kursor hover diubah ke merah transparan */}
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(254, 226, 226, 0.6)' }} />
+                  <Bar dataKey="Stok Tersedia" fill="url(#colorStock)" radius={[0, 4, 4, 0]} barSize={15} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-            <div className="p-4">
-              <div className="overflow-x-auto">
-                <table className="min-w-full">
-                  <thead>
-                    <tr className="border-b border-gray-300">
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Pasien</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Waktu</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Tipe</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Dokter</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {patientAppointments.map((appointment, index) => (
-                      <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
-                        <td className="py-3 px-4 text-sm">{appointment.name}</td>
-                        <td className="py-3 px-4 text-sm">{appointment.time}</td>
-                        <td className="py-3 px-4 text-sm">{appointment.type}</td>
-                        <td className="py-3 px-4 text-sm">{appointment.doctor}</td>
-                        <td className="py-3 px-4 text-sm">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            appointment.status === 'Selesai' 
-                              ? 'bg-blue-100 text-blue-600' 
-                              : appointment.status === 'Sedang Berlangsung' 
-                                ? 'bg-green-100 text-green-600' 
-                                : 'bg-amber-100 text-amber-600'
-                          }`}>
-                            {appointment.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-lg shadow">
-              <div className="border-b border-gray-300 p-4">
-                <h3 className="font-semibold text-gray-700">Grafik Kunjungan Pasien</h3>
-              </div>
-              <div className="p-4 flex items-center justify-center h-64">
-                <div className="flex items-end space-x-2 h-48">
-                  <div className="w-8 bg-gradient-to-t from-teal-500 to-blue-500 rounded-t h-24"></div>
-                  <div className="w-8 bg-gradient-to-t from-teal-500 to-blue-500 rounded-t h-32"></div>
-                  <div className="w-8 bg-gradient-to-t from-teal-500 to-blue-500 rounded-t h-40"></div>
-                  <div className="w-8 bg-gradient-to-t from-teal-500 to-blue-500 rounded-t h-20"></div>
-                  <div className="w-8 bg-gradient-to-t from-teal-500 to-blue-500 rounded-t h-36"></div>
-                  <div className="w-8 bg-gradient-to-t from-teal-500 to-blue-500 rounded-t h-28"></div>
-                  <div className="w-8 bg-gradient-to-t from-teal-500 to-blue-500 rounded-t h-44"></div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-lg shadow">
-              <div className="border-b border-gray-300 p-4">
-                <h3 className="font-semibold text-gray-700">Tugas Hari Ini</h3>
-              </div>
-              <div className="p-4">
-                <ul className="space-y-3">
-                  <li className="flex items-center space-x-3">
-                    <input type="checkbox" className="rounded text-teal-500 focus:ring-teal-500" />
-                    <span className="text-gray-600">Review hasil lab pasien Andi Susanto</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <input type="checkbox" className="rounded text-teal-500 focus:ring-teal-500" />
-                    <span className="text-gray-600">Persiapan presentasi kasus untuk rapat staff</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <input type="checkbox" className="rounded text-teal-500 focus:ring-teal-500" />
-                    <span className="text-gray-600">Follow-up dengan dr. Budi tentang rujukan pasien</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <input type="checkbox" className="rounded text-teal-500 focus:ring-teal-500" />
-                    <span className="text-gray-600">Tanda tangani dokumen BPJS pasien baru</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </main>
-    
-    </div>
+          </motion.div>
+        </div>
+      </div>
+    </motion.div>
   );
 }
-
-export default Dashboard;

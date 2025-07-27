@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from "recharts";
 import { motion } from "framer-motion";
-import { Target, Menu, X } from "lucide-react"; 
+import { Target, } from "lucide-react";
 import { useRiwayatKunjunganUks } from "@/context/RiwayatKunjunganUksContext";
 
 export default function Page() {
@@ -17,8 +17,9 @@ export default function Page() {
     totalVisits: 0,
     activeVisits: 0,
   });
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State for dropdown visibility
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  
   useEffect(() => {
     if (!loading) {
       if (user && user.role === "admin") {
@@ -39,7 +40,7 @@ export default function Page() {
     error,
     getAllRiwayat,
     exportRiwayat,
-  } = useRiwayatKunjunganUks(); // Get exportRiwayat from context
+  } = useRiwayatKunjunganUks();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -68,22 +69,8 @@ export default function Page() {
         }
       });
 
-      // Transform data for recharts
       const yearlyChartData = yearlyStats.map((visits, index) => ({
-        month: [
-          "Januari",
-          "Februari",
-          "Maret",
-          "April",
-          "Mei",
-          "Juni",
-          "Juli",
-          "Agustus",
-          "September",
-          "Oktober",
-          "November",
-          "Desember",
-        ][index],
+        month: [ "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des" ][index],
         visits: visits,
       }));
       setYearlyData(yearlyChartData);
@@ -92,9 +79,7 @@ export default function Page() {
       const weeklyStats = Array(7).fill(0);
       const today = new Date();
       const startOfWeek = new Date(today);
-      startOfWeek.setDate(
-        today.getDate() - (today.getDay() === 0 ? 6 : today.getDay() - 1)
-      );
+      startOfWeek.setDate(today.getDate() - (today.getDay() === 0 ? 6 : today.getDay() - 1));
       startOfWeek.setHours(0, 0, 0, 0);
       today.setHours(23, 59, 59, 999);
 
@@ -103,28 +88,22 @@ export default function Page() {
         visitDate.setHours(0, 0, 0, 0);
 
         if (visitDate >= startOfWeek && visitDate <= today) {
-          const dayIndex =
-            visitDate.getDay() === 0 ? 6 : visitDate.getDay() - 1;
+          const dayIndex = visitDate.getDay() === 0 ? 6 : visitDate.getDay() - 1;
           if (dayIndex >= 0 && dayIndex < 7) {
             weeklyStats[dayIndex]++;
           }
         }
       });
 
-      // Transform data for recharts
       const weeklyChartData = weeklyStats.map((visits, index) => ({
-        day: ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"][
-          index
-        ],
+        day: ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"][index],
         visits: visits,
       }));
       setWeeklyData(weeklyChartData);
 
       // Set today's stats
       const todayString = today.toISOString().split("T")[0];
-      const todayVisits = riwayatList.filter(
-        (visit) => visit.tanggal === todayString
-      ).length;
+      const todayVisits = riwayatList.filter((visit) => visit.tanggal === todayString).length;
 
       setTodayStats({
         totalVisits: riwayatList.length,
@@ -133,29 +112,66 @@ export default function Page() {
     }
   }, [riwayatList]);
 
+  const handleYearlyExport = () => {
+    const currentYear = new Date().getFullYear();
+    exportRiwayat({ year: currentYear });
+    setIsDropdownOpen(false);
+  };
+
+  
+  
+
+  if (loading || !user || user.role !== "user") {
+    return null;
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <Navbar />
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-4 md:p-6">
         <div className="max-w-6xl mx-auto">
-          {/* Title and Dropdown Container */}
           <div className="flex items-center justify-between mb-8 relative">
-            {" "}
-            {/* Added relative positioning */}
             <h1 className="text-2xl font-semibold text-gray-900">Statistik</h1>
           </div>
 
-          <div className="grid grid-cols-1 gap-6">
-            {/* Yearly Chart - Full Width */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            {/* --- Stats Card (Hari Ini) --- */}
+          
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="lg:order-3 lg:col-span-1 bg-white rounded-xl p-6 shadow-sm flex flex-col justify-center"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Hari Ini
+              </h3>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Target className="w-6 h-6 text-red-500" />
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-gray-900">
+                    {riwayatLoading ? '...' : todayStats.activeVisits}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    Siswa sakit
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* --- Yearly Chart --- */}
+          
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="bg-white rounded-xl p-6 shadow-sm"
+              className="lg:order-1 lg:col-span-3 bg-white rounded-xl p-4 sm:p-6 shadow-sm"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-gray-900">Tahun</h2>
+                <h2 className="text-lg font-semibold text-gray-900">Tahunan</h2>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
                   <span>📅</span>
                   <span>{new Date().getFullYear()}</span>
@@ -163,117 +179,41 @@ export default function Page() {
               </div>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={yearlyData}
-                    margin={{ top: 20, right: 10, left: 10, bottom: 5 }}
-                  >
-                    <XAxis
-                      dataKey="month"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 12, fill: "#6B7280" }}
-                      interval={0}
-                      height={60}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 12, fill: "#6B7280" }}
-                      domain={[0, 10]}
-                      ticks={[0, 2, 4, 6, 8, 10]}
-                    />
-                    <Bar
-                      dataKey="visits"
-                      fill="#EF4444"
-                      radius={[4, 4, 0, 0]}
-                      maxBarSize={40}
-                    />
+                  <BarChart data={yearlyData} margin={{ top: 5, right: 0, left: -20, bottom: 20 }}>
+                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#6B7280" }} interval={0} textAnchor="end" />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#6B7280" }} domain={[0, 'dataMax + 2']} allowDecimals={false} />
+                    <Bar dataKey="visits" fill="#EF4444" radius={[4, 4, 0, 0]} maxBarSize={30} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </motion.div>
 
-            {/* Weekly Chart and Stats Card - Side by Side */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Weekly Chart - Takes 2/3 width */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm"
-              >
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-semibold text-gray-900">Pekan</h2>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <span>📅</span>
-                    <span>
-                      {new Date().toLocaleDateString("id-ID", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </span>
-                  </div>
+            {/* --- Weekly Chart --- */}
+          
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="lg:order-2 lg:col-span-2 bg-white rounded-xl p-4 sm:p-6 shadow-sm"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold text-gray-900">Pekan Ini</h2>
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <span>🗓️</span>
+                  <span>Minggu Ini</span>
                 </div>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={weeklyData}
-                      margin={{ top: 20, right: 10, left: 10, bottom: 5 }}
-                    >
-                      <XAxis
-                        dataKey="day"
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fontSize: 12, fill: "#6B7280" }}
-                      />
-                      <YAxis
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fontSize: 12, fill: "#6B7280" }}
-                        domain={[0, 10]}
-                        ticks={[0, 2, 4, 6, 8, 10]}
-                      />
-                      <Bar
-                        dataKey="visits"
-                        fill="#EF4444"
-                        radius={[4, 4, 0, 0]}
-                        maxBarSize={60}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </motion.div>
-
-              {/* Stats Card - Takes 1/3 width */}
-              <div className="lg:col-span-1 space-y-6">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                  className="bg-white rounded-xl p-6 shadow-sm"
-                >
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    Hari ini
-                  </h3>
-
-                  {/* Total Siswa Sakit Card */}
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Target className="w-6 h-6 text-red-500" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-3xl font-bold text-gray-900 mb-1">
-                        {todayStats.activeVisits}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        Siswa sakit hari ini
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
               </div>
-            </div>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={weeklyData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6B7280" }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#6B7280" }} domain={[0, 'dataMax + 2']} allowDecimals={false} />
+                    <Bar dataKey="visits" fill="#EF4444" radius={[4, 4, 0, 0]} maxBarSize={50} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+
           </div>
         </div>
       </main>
